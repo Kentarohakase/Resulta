@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 - Reworked `Result`, `Result<T>`, and `ValidationResult<T>` to use class-based implementations instead of structs.
 - Updated example code to match the current API shape and compile cleanly.
+- Renamed project structure, solution, and project files from `FluentResults` to `Resulta`.
+- Aligned ASP.NET Core extension methods and namespaces with the `Resulta` package name.
 ### Fixed
 - Fixed invalid default-state behavior in result types.
 - Fixed multiple example build issues caused by outdated API usage.
