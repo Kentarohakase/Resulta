@@ -1,4 +1,4 @@
-namespace FluentResults
+namespace Resulta
 {
     /// <summary>
     /// Represents a structured error with an optional code, metadata, and cause chain.

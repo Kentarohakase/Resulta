@@ -1,10 +1,10 @@
 using System;
 using System.Threading.Tasks;
 
-using FluentResults;
-using FluentResults.Extensions;
+using Resulta;
+using Resulta.Extensions;
 
-namespace FluentResults
+namespace Resulta
 {
   internal static class Examples
   {

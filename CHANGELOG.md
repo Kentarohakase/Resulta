@@ -10,10 +10,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Nothing yet.
 
 ### Changed
-- Nothing yet.
-
+- Reworked `Result`, `Result<T>`, and `ValidationResult<T>` to use class-based implementations instead of structs.
+- Updated example code to match the current API shape and compile cleanly.
 ### Fixed
-- Nothing yet.
+- Fixed invalid default-state behavior in result types.
+- Fixed multiple example build issues caused by outdated API usage.
 
 ## [1.0.0] - 2026-04-03
 

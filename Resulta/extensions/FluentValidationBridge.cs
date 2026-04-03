@@ -1,7 +1,7 @@
 using FluentValidation;
 using FluentValidation.Results;
 
-namespace FluentResults.Extensions.FluentValidation
+namespace Resulta.Extensions.FluentValidation
 {
     /// <summary>
     /// Bridge between FluentValidation and FluentResults.
