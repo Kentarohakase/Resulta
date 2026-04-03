@@ -1,6 +1,6 @@
 using System;
 
-namespace FluentResults
+namespace Resulta
 {
   /// <summary>
   /// Represents a result without a return value (success or failure).

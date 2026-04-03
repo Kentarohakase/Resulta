@@ -1,6 +1,6 @@
 using System;
 
-namespace FluentResults
+namespace Resulta
 {
   /// <summary>
   /// Represents a result with a return value – either a value (Ok) or an error (Fail).

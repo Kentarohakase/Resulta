@@ -1,4 +1,4 @@
-namespace FluentResults
+namespace Resulta
 {
     /// <summary>
     /// Extension methods for async/await support, LINQ, and common result operations.

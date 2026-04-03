@@ -1,4 +1,4 @@
-namespace FluentResults.Extensions
+namespace Resulta.Extensions
 {
     /// <summary>
     /// Railway-Oriented Pipeline – chain processing steps elegantly.

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace FluentResults.Extensions.AspNetCore
+namespace Resulta.Extensions.AspNetCore
 {
     // ── Error Response ────────────────────────────────────────────────────────
 
@@ -110,11 +110,11 @@ namespace FluentResults.Extensions.AspNetCore
     public static class ServiceCollectionExtensions
     {
         /// <summary>Registers FluentResults services.</summary>
-        public static IServiceCollection AddFluentResults(this IServiceCollection services)
+        public static IServiceCollection AddResulta(this IServiceCollection services)
             => services;
 
         /// <summary>Registers the global exception-handling middleware.</summary>
-        public static IApplicationBuilder UseFluentResults(this IApplicationBuilder app)
+        public static IApplicationBuilder UseResulta(this IApplicationBuilder app)
         {
             app.UseMiddleware<ResultMiddleware>();
             return app;
@@ -124,7 +124,7 @@ namespace FluentResults.Extensions.AspNetCore
     // ── Usage Example ─────────────────────────────────────────────────────────
     /*
     // Program.cs
-    builder.Services.AddFluentResults();
+    builder.Services.AddResulta();
     app.UseFluentResults(); // Global exception handling
 
     // Controller – no try/catch needed! ✅

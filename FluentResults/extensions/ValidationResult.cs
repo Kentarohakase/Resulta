@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using FluentResults;
+using Resulta;
 
-namespace FluentResults.Extensions
+namespace Resulta.Extensions
 {
   /// <summary>
   /// A result that can collect multiple errors at once – ideal for form validation.
