@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+
+## [2.0.0] -2026-04-03
+
 ### Added
 - Added automated tests for `Result`, `Result<T>`, `ValidationResult<T>`, and `Validator<T>`.
 
@@ -41,4 +44,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `.NET 10` support.
 
 [Unreleased]: https://github.com/Kentarohakase/Resulta/compare/v1.0.0...HEAD
+[2.0.0]: https://github.com/Kentarohakase/Resulta/compare/tag/v2.0.0
 [1.0.0]: https://github.com/Kentarohakase/Resulta/releases/tag/v1.0.0
