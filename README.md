@@ -14,6 +14,13 @@
 
 *Stop throwing exceptions for expected failures. Start returning Results.*
 
+## Documentation
+
+- [Changelog](./CHANGELOG.md)
+- [Versioning Guide](./VERSIONING.md)
+
+These documents describe release history and the versioning strategy used by Resulta.
+
 </div>
 
 ---
