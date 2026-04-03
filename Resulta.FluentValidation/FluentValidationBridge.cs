@@ -1,7 +1,9 @@
-using FluentValidation;
-using FluentValidation.Results;
+using global::FluentValidation;
+using global::FluentValidation.Results;
 
-namespace Resulta.Extensions.FluentValidation
+using Resulta;
+using Resulta.Extensions;
+namespace Resulta.FluentValidation
 {
     /// <summary>
     /// Bridge between FluentValidation and FluentResults.

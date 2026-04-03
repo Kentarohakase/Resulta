@@ -1,4 +1,6 @@
 <Solution>
+  <Project Path="Resulta.AspNetCore/Resulta.AspNetCore.csproj" />
+  <Project Path="Resulta.FluentValidation/Resulta.FluentValidation.csproj" />
   <Project Path="Resulta.Tests/Resulta.Tests.csproj" />
   <Project Path="Resulta/Resulta.csproj" />
 </Solution>

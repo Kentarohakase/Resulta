@@ -1,15 +1,8 @@
 # ✨ Resulta
 
-**A lightweight C# library for the Result pattern – error handling without exceptions.**
+A lightweight C# library for the Result pattern – structured error handling without relying on exceptions for expected failures.
 
-[![NuGet](https://img.shields.io/nuget/v/Resulta?color=blue&logo=nuget)](https://www.nuget.org/packages/Resulta)
-[![NuGet Downloads](https://img.shields.io/nuget/dt/Resulta?color=green)](https://www.nuget.org/packages/Resulta)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![.NET](https://img.shields.io/badge/.NET-10.0-purple)](https://dotnet.microsoft.com)
-[![Build](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/kentaro/Resulta)
-
-
-Stop throwing exceptions for expected failures. Start returning Results.
+Stop throwing exceptions for expected failures. Start returning results.
 
 ---
 
@@ -19,6 +12,18 @@ Stop throwing exceptions for expected failures. Start returning Results.
 - [Versioning Guide](./VERSIONING.md)
 
 These documents describe the release history and the versioning strategy used by Resulta.
+
+---
+
+## Packages
+
+Resulta is split into separate packages:
+
+- `Resulta` – core result types, validation primitives, helper methods, and pipelines
+- `Resulta.AspNetCore` – ASP.NET Core integration
+- `Resulta.FluentValidation` – FluentValidation integration
+
+This keeps the core package lightweight while allowing optional integrations when needed.
 
 ---
 
@@ -71,9 +76,24 @@ Resulta makes success and failure explicit, composable, and type-safe.
 
 ## Installation
 
+### Core package
+
 ```bash
 dotnet add package Resulta
 ```
+
+### Optional integrations
+
+```bash
+dotnet add package Resulta.AspNetCore
+dotnet add package Resulta.FluentValidation
+```
+
+`Resulta` contains the core result types and helpers.
+
+`Resulta.AspNetCore` adds ASP.NET Core integration such as HTTP result mapping and middleware setup.
+
+`Resulta.FluentValidation` adds integration helpers for converting FluentValidation results into `Result` and `ValidationResult<T>`.
 
 ---
 
@@ -87,7 +107,7 @@ using Resulta;
 Result<int> Divide(int a, int b)
 {
     if (b == 0)
-        return Result.Fail<int>("Division by zero!");
+        return Result.Fail<int>("Division by zero");
 
     return Result.Ok(a / b);
 }
@@ -97,10 +117,10 @@ var result = Divide(10, 2);
 if (result.IsSuccess)
     Console.WriteLine($"Result: {result.Value}");
 else
-    Console.WriteLine($"Error: {result.Error}");
+    Console.WriteLine($"Error: {result.Error.Message}");
 ```
 
-### Map, Bind and Ensure
+### Map, Bind, and Ensure
 
 ```csharp
 var dto = LoadUser(1)
@@ -123,7 +143,7 @@ string message = result.Match(
 ```csharp
 var parsed = ResultExtensions.Try(
     () => int.Parse(userInput),
-    ex => new Error("Invalid number format").WithCode("PARSE_ERROR")
+    ex => new Error($"Invalid number format: {ex.Message}").WithCode("PARSE_ERROR")
 );
 ```
 
@@ -134,7 +154,7 @@ var parsed = ResultExtensions.Try(
 | Feature | Description |
 |---|---|
 | `Result` / `Result<T>` | Explicit success or failure without exceptions |
-| `Error` | Structured error model with message, code, metadata, cause chain and exception |
+| `Error` | Structured error model with message, code, metadata, cause chain, and exception |
 | `Map` / `Bind` | Transform and compose operations fluently |
 | `Match` | Enforce handling for both success and failure |
 | `Ensure` | Add inline validation to a successful result |
@@ -143,8 +163,8 @@ var parsed = ResultExtensions.Try(
 | `ValidationResult<T>` | Collect multiple validation errors |
 | `Validator<T>` | Fluent validation builder |
 | `Pipeline<T>` / `AsyncPipeline<T>` | Railway-oriented composition for sync and async flows |
-| ASP.NET Core integration | Convert results directly into HTTP responses |
-| FluentValidation bridge | Turn validator output into `Result` and `ValidationResult<T>` |
+| `Resulta.AspNetCore` | Optional package for converting results into HTTP responses |
+| `Resulta.FluentValidation` | Optional package for turning FluentValidation output into `Result` and `ValidationResult<T>` |
 
 ---
 
@@ -209,6 +229,18 @@ var orderMessage = await AsyncPipeline<Order>
 
 ## ASP.NET Core Integration
 
+Install the ASP.NET Core integration package:
+
+```bash
+dotnet add package Resulta.AspNetCore
+```
+
+Import the namespace:
+
+```csharp
+using Resulta.AspNetCore;
+```
+
 ### Setup
 
 ```csharp
@@ -263,7 +295,21 @@ app.MapGet("/api/users/{id}", (int id, UserService service)
 
 ---
 
-## FluentValidation Bridge
+## FluentValidation Integration
+
+Install the FluentValidation integration package:
+
+```bash
+dotnet add package Resulta.FluentValidation
+```
+
+Import the namespace:
+
+```csharp
+using Resulta.FluentValidation;
+```
+
+### Validator example
 
 ```csharp
 public class RegisterDtoValidator : AbstractValidator<RegisterDto>
@@ -277,7 +323,7 @@ public class RegisterDtoValidator : AbstractValidator<RegisterDto>
 }
 ```
 
-Use the validator directly in your service layer:
+### Convert validation output into `Result`
 
 ```csharp
 public Result<User> Register(RegisterDto dto) =>
@@ -286,7 +332,7 @@ public Result<User> Register(RegisterDto dto) =>
         .Bind(CreateUser);
 ```
 
-Async variant:
+### Async variant
 
 ```csharp
 public async Task<Result<User>> RegisterAsync(RegisterDto dto) =>
@@ -295,32 +341,40 @@ public async Task<Result<User>> RegisterAsync(RegisterDto dto) =>
         .Bind(CreateUserAsync);
 ```
 
+### Convert validation output into `ValidationResult<T>`
+
+```csharp
+var validationResult = await _validator.ToValidationResultAsync(dto);
+
+validationResult.Match(
+    onSuccess: value => "Validation passed",
+    onFailure: errors => $"Validation failed with {errors.Count} error(s)"
+);
+```
+
 ---
 
 ## Project Structure
 
 ```text
 Resulta/
-├── FluentResults/
-│   ├── src/
-│   │   ├── Result.cs
-│   │   ├── ResultT.cs
-│   │   ├── Error.cs
-│   │   └── ResultExtensions.cs
-│   ├── extensions/
-│   │   ├── ValidationResult.cs
-│   │   ├── Pipeline.cs
-│   │   ├── AspNetCoreIntegration.cs
-│   │   └── FluentValidationBridge.cs
-│   ├── FluentResults.csproj
-│   └── README.md
+├── Resulta/
+│   ├── Result.cs
+│   ├── ResultT.cs
+│   ├── Error.cs
+│   ├── ResultExtensions.cs
+│   ├── ValidationResult.cs
+│   └── Pipeline.cs
+├── Resulta.AspNetCore/
+│   └── AspNetCoreIntegration.cs
+├── Resulta.FluentValidation/
+│   └── FluentValidationBridge.cs
+├── Resulta.Tests/
 ├── CHANGELOG.md
 ├── VERSIONING.md
 ├── README.md
-└── FluentResults.slnx
+└── Resulta.slnx
 ```
-
-> Note: The internal project and solution names still use `FluentResults`, while the library is presented publicly as `Resulta`.
 
 ---
 
@@ -339,7 +393,7 @@ For version bump rules and release guidance, see [VERSIONING.md](./VERSIONING.md
 
 ## Contributing
 
-Contributions, issues and feature requests are welcome.
+Contributions, issues, and feature requests are welcome.
 
 1. Fork the repository
 2. Create a feature branch  

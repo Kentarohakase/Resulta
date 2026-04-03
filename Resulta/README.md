@@ -38,12 +38,13 @@ return GetUser(id).Match<IActionResult>(
 ```
 
 ---
-
+```md
 ## Installation
+
+### Core package
 
 ```bash
 dotnet add package Resulta
-```
 
 ---
 
