@@ -298,7 +298,9 @@ Resulta follows **Semantic Versioning**:
 
 For release history, see [CHANGELOG.md](./CHANGELOG.md).  
 For release rules and version bump guidance, see [VERSIONING.md](./VERSIONING.md).
-
+```
+---
+```
 ## 🤝 Contributing
 
 Contributions, issues and feature requests are welcome!
