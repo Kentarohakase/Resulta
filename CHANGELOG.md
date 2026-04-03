@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
-- Nothing yet.
+- Added automated tests for `Result`, `Result<T>`, `ValidationResult<T>`, and `Validator<T>`.
 
 ### Changed
 - Reworked `Result`, `Result<T>`, and `ValidationResult<T>` to use class-based implementations instead of structs.
