@@ -5,12 +5,34 @@ namespace Resulta
     /// </summary>
     public sealed class Error
     {
+        /// <summary>
+        /// Human-readable error message describing what went wrong.
+        /// </summary>
         public string Message { get; }
+
+        /// <summary>
+        /// Optional machine-readable error code.
+        /// </summary>
         public string? Code { get; }
+
+        /// <summary>
+        /// Optional exception associated with this error.
+        /// </summary>
         public Exception? Exception { get; }
+
+        /// <summary>
+        /// Optional causal error that caused this error.
+        /// </summary>
         public Error? CausedBy { get; }
+
+        /// <summary>
+        /// Additional metadata associated with this error.
+        /// </summary>
         public IReadOnlyDictionary<string, object> Metadata { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Error"/> class with the specified details.
+        /// </summary>
         public Error(string message, string? code = null, Exception? exception = null,
                      Error? causedBy = null, Dictionary<string, object>? metadata = null)
         {
@@ -70,6 +92,9 @@ namespace Resulta
 
         // ── Formatting ───────────────────────────────────────────────────────
 
+        /// <summary>
+        /// Returns a short string representation of the error, including message, code and immediate cause.
+        /// </summary>
         public override string ToString()
         {
             var parts = new System.Collections.Generic.List<string> { Message };

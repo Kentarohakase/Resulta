@@ -9,9 +9,19 @@ namespace Resulta
   {
     private readonly Error? _error;
 
+    /// <summary>
+    /// Indicates whether the result represents a successful outcome.
+    /// </summary>
     public bool IsSuccess { get; }
+
+    /// <summary>
+    /// Indicates whether the result represents a failed outcome.
+    /// </summary>
     public bool IsFailure => !IsSuccess;
 
+    /// <summary>
+    /// Gets the error for a failed result. Throws an <see cref="InvalidOperationException"/> if the result is successful.
+    /// </summary>
     public Error Error =>
         IsFailure
             ? _error ?? throw new InvalidOperationException("No error present – result has failed in an invalid state.")
@@ -30,10 +40,19 @@ namespace Resulta
     }
 
     // Non-generic factory methods
+    /// <summary>
+    /// Creates a successful <see cref="Result"/>.
+    /// </summary>
     public static Result Ok() => new Result(true, null);
 
+    /// <summary>
+    /// Creates a failed <see cref="Result"/> with the given error message.
+    /// </summary>
     public static Result Fail(string message) => new Result(false, new Error(message));
 
+    /// <summary>
+    /// Creates a failed <see cref="Result"/> with the given <see cref="Error"/>.
+    /// </summary>
     public static Result Fail(Error error)
     {
       ArgumentNullException.ThrowIfNull(error);
@@ -41,10 +60,19 @@ namespace Resulta
     }
 
     // Generic convenience factory methods
+    /// <summary>
+    /// Creates a successful generic <see cref="Result{T}"/> with the given value.
+    /// </summary>
     public static Result<T> Ok<T>(T value) => Result<T>.Ok(value);
 
+    /// <summary>
+    /// Creates a failed generic <see cref="Result{T}"/> with the given error message.
+    /// </summary>
     public static Result<T> Fail<T>(string message) => Result<T>.Fail(message);
 
+    /// <summary>
+    /// Creates a failed generic <see cref="Result{T}"/> with the given <see cref="Error"/>.
+    /// </summary>
     public static Result<T> Fail<T>(Error error)
     {
       ArgumentNullException.ThrowIfNull(error);
@@ -102,8 +130,14 @@ namespace Resulta
       return this;
     }
 
+    /// <summary>
+    /// Implicitly converts an <see cref="Error"/> to a failed <see cref="Result"/>.
+    /// </summary>
     public static implicit operator Result(Error error) => Fail(error);
 
+    /// <summary>
+    /// Returns a string representation of the result.
+    /// </summary>
     public override string ToString() =>
         IsSuccess
             ? "Result { Success }"

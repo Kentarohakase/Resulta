@@ -10,14 +10,27 @@ namespace Resulta
     private readonly T? _value;
     private readonly Error? _error;
 
+    /// <summary>
+    /// Indicates whether the result represents a successful outcome.
+    /// </summary>
     public bool IsSuccess { get; }
+
+    /// <summary>
+    /// Indicates whether the result represents a failed outcome.
+    /// </summary>
     public bool IsFailure => !IsSuccess;
 
+    /// <summary>
+    /// Gets the successful value. Throws an <see cref="InvalidOperationException"/> if the result is a failure.
+    /// </summary>
     public T Value =>
         IsSuccess
             ? _value!
             : throw new InvalidOperationException($"No value present – result has failed: {Error}");
 
+    /// <summary>
+    /// Gets the error for a failed result. Throws an <see cref="InvalidOperationException"/> if the result is successful.
+    /// </summary>
     public Error Error =>
         IsFailure
             ? _error ?? throw new InvalidOperationException("No error present – result has failed in an invalid state.")
@@ -38,10 +51,19 @@ namespace Resulta
 
     // ── Factory Methods ──────────────────────────────────────────────────
 
+    /// <summary>
+    /// Creates a successful <see cref="Result{T}"/> containing the specified value.
+    /// </summary>
     public static Result<T> Ok(T value) => new Result<T>(value, null, true);
 
+    /// <summary>
+    /// Creates a failed <see cref="Result{T}"/> with the given error message.
+    /// </summary>
     public static Result<T> Fail(string message) => new Result<T>(default, new Error(message), false);
 
+    /// <summary>
+    /// Creates a failed <see cref="Result{T}"/> with the given <see cref="Error"/>.
+    /// </summary>
     public static Result<T> Fail(Error error)
     {
       ArgumentNullException.ThrowIfNull(error);
@@ -175,8 +197,14 @@ namespace Resulta
 
     // ── Implicit Conversions ─────────────────────────────────────────────
 
+    /// <summary>
+    /// Implicitly converts a value of type <typeparamref name="T"/> into a successful <see cref="Result{T}"/>.
+    /// </summary>
     public static implicit operator Result<T>(T value) => Ok(value);
 
+    /// <summary>
+    /// Implicitly converts an <see cref="Error"/> into a failed <see cref="Result{T}"/>.
+    /// </summary>
     public static implicit operator Result<T>(Error error) => Fail(error);
 
     // ── Convert to non-generic Result ────────────────────────────────────
@@ -187,6 +215,9 @@ namespace Resulta
     public Result ToResult() =>
         IsSuccess ? Result.Ok() : Result.Fail(Error);
 
+    /// <summary>
+    /// Returns a string representation of the result, including the generic type name and either the value or the error.
+    /// </summary>
     public override string ToString() =>
         IsSuccess
             ? $"Result<{typeof(T).Name}> {{ Ok: {_value} }}"
