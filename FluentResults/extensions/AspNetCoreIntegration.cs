@@ -52,7 +52,7 @@ namespace Resulta.Extensions.AspNetCore
 
     /// <summary>
     /// Middleware that converts unhandled exceptions into structured JSON error responses.
-    /// Register with app.UseFluentResults() in Program.cs.
+    /// Register with app.UseResulta() in Program.cs.
     /// </summary>
     public class ResultMiddleware
     {
@@ -125,7 +125,7 @@ namespace Resulta.Extensions.AspNetCore
     /*
     // Program.cs
     builder.Services.AddResulta();
-    app.UseFluentResults(); // Global exception handling
+    app.UseResulta(); // Global exception handling
 
     // Controller – no try/catch needed! ✅
     [ApiController]
