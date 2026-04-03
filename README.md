@@ -1,5 +1,3 @@
-<div align="center">
-
 # ✨ Resulta
 
 **A lightweight C# library for the Result pattern – error handling without exceptions.**
@@ -10,45 +8,55 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple)](https://dotnet.microsoft.com)
 [![Build](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/kentaro/Resulta)
 
-<br/>
 
-*Stop throwing exceptions for expected failures. Start returning Results.*
+Stop throwing exceptions for expected failures. Start returning Results.
+
+---
 
 ## Documentation
 
 - [Changelog](./CHANGELOG.md)
 - [Versioning Guide](./VERSIONING.md)
 
-These documents describe release history and the versioning strategy used by Resulta.
-
-</div>
+These documents describe the release history and the versioning strategy used by Resulta.
 
 ---
 
-## 🤔 The Problem
+## Why Resulta?
+
+Using exceptions for expected outcomes often makes code harder to read, harder to test, and easier to misuse.
+
+### Without Resulta
 
 ```csharp
-// ❌ Exceptions as control flow – messy, slow, easy to forget
 try
 {
-    var user = _userService.GetUser(id);   // throws NotFoundException?
-    var order = _orderService.Place(user); // throws ValidationException?
+    var user = _userService.GetUser(id);
+    var order = _orderService.Place(user);
     return Ok(order);
 }
-catch (NotFoundException ex)   { return NotFound(ex.Message); }
-catch (ValidationException ex) { return BadRequest(ex.Message); }
-catch (Exception ex)           { return StatusCode(500, ex.Message); }
+catch (NotFoundException ex)
+{
+    return NotFound(ex.Message);
+}
+catch (ValidationException ex)
+{
+    return BadRequest(ex.Message);
+}
+catch (Exception ex)
+{
+    return StatusCode(500, ex.Message);
+}
 ```
 
-## ✅ The Solution
+### With Resulta
 
 ```csharp
-// ✅ Explicit, readable, type-safe – no surprises
 return _userService.GetUser(id)
     .Bind(user => _orderService.Place(user))
     .Match<IActionResult>(
         onSuccess: order => Ok(order),
-        onFailure: err   => err.Code switch
+        onFailure: err => err.Code switch
         {
             "NOT_FOUND"        => NotFound(err.Message),
             "VALIDATION_ERROR" => BadRequest(err.Message),
@@ -57,9 +65,11 @@ return _userService.GetUser(id)
     );
 ```
 
+Resulta makes success and failure explicit, composable, and type-safe.
+
 ---
 
-## 📦 Installation
+## Installation
 
 ```bash
 dotnet add package Resulta
@@ -67,9 +77,9 @@ dotnet add package Resulta
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
-### Basic Ok & Fail
+### Basic Ok and Fail
 
 ```csharp
 using Resulta;
@@ -85,59 +95,62 @@ Result<int> Divide(int a, int b)
 var result = Divide(10, 2);
 
 if (result.IsSuccess)
-    Console.WriteLine($"Result: {result.Value}");  // Result: 5
+    Console.WriteLine($"Result: {result.Value}");
 else
     Console.WriteLine($"Error: {result.Error}");
 ```
 
-### Map, Bind & Chain
+### Map, Bind and Ensure
 
 ```csharp
-var dto = LoadUser(1)                                           // Result<User>
-    .Bind(user => ValidateUser(user))                          // Result<User>
-    .Ensure(user => user.IsActive, "User account is inactive") // Result<User>
-    .Map(user => new UserDto(user.Name, user.Email));          // Result<UserDto>
+var dto = LoadUser(1)
+    .Bind(user => ValidateUser(user))
+    .Ensure(user => user.IsActive, "User account is inactive")
+    .Map(user => new UserDto(user.Name, user.Email));
 ```
 
-### Match – force handling of both cases
+### Match
 
 ```csharp
 string message = result.Match(
-    onSuccess: value => $"✅ Success: {value}",
-    onFailure: err   => $"❌ Error [{err.Code}]: {err.Message}"
+    onSuccess: value => $"Success: {value}",
+    onFailure: err   => $"Error [{err.Code}]: {err.Message}"
 );
 ```
 
-### Try – wrap exceptions
+### Try and TryAsync
 
 ```csharp
-var result = ResultExtensions.Try(
+var parsed = ResultExtensions.Try(
     () => int.Parse(userInput),
-    ex  => new Error("Invalid number format").WithCode("PARSE_ERROR")
+    ex => new Error("Invalid number format").WithCode("PARSE_ERROR")
 );
 ```
 
 ---
 
-## 🧩 Features
+## Features
 
 | Feature | Description |
-|---------|-------------|
-| `Result<T>` | Type-safe result with value or error |
-| `Error` | Structured error with code, metadata & cause chain |
-| `Map / Bind` | Transform and chain operations |
-| `Match` | Force handling of both success & failure |
-| `Ensure` | Validate values inline |
-| `Try / TryAsync` | Wrap exceptions into Results |
-| `Combine` | Merge multiple Results into one |
-| `ValidationResult<T>` | Collect multiple errors (perfect for forms) |
-| `Pipeline<T>` | Railway-Oriented pipeline (sync & async) |
-| `ASP.NET Core` | Automatic Result → HTTP response mapping |
-| `FluentValidation` | Bridge to FluentValidation |
+|---|---|
+| `Result` / `Result<T>` | Explicit success or failure without exceptions |
+| `Error` | Structured error model with message, code, metadata, cause chain and exception |
+| `Map` / `Bind` | Transform and compose operations fluently |
+| `Match` | Enforce handling for both success and failure |
+| `Ensure` | Add inline validation to a successful result |
+| `Try` / `TryAsync` | Convert exceptions into `Result` values |
+| `Combine` | Merge multiple results into a single outcome |
+| `ValidationResult<T>` | Collect multiple validation errors |
+| `Validator<T>` | Fluent validation builder |
+| `Pipeline<T>` / `AsyncPipeline<T>` | Railway-oriented composition for sync and async flows |
+| ASP.NET Core integration | Convert results directly into HTTP responses |
+| FluentValidation bridge | Turn validator output into `Result` and `ValidationResult<T>` |
 
 ---
 
-## 📋 ValidationResult – collect multiple errors
+## ValidationResult
+
+Collect multiple validation errors at once.
 
 ```csharp
 var result = Validator<RegisterDto>.For(dto)
@@ -147,62 +160,75 @@ var result = Validator<RegisterDto>.For(dto)
     .Validate();
 
 result.Match(
-    onSuccess: dto    => Console.WriteLine($"Welcome, {dto.Name}!"),
+    onSuccess: value => Console.WriteLine($"Welcome, {value.Name}!"),
     onFailure: errors =>
     {
         Console.WriteLine($"{errors.Count} validation error(s):");
-        foreach (var e in errors)
-            Console.WriteLine($"  • {e.Message}");
+        foreach (var error in errors)
+            Console.WriteLine($" - {error.Message}");
     }
 );
 ```
 
 ---
 
-## 🚂 Railway Pipeline
+## Railway Pipelines
+
+### Synchronous pipeline
 
 ```csharp
-// Sync
 var token = Pipeline<string>
     .Start(loginRequest.Username)
-    .Validate(s => s.Length > 0,    "Username must not be empty")
-    .Then(s => FindUser(s))         // returns Result<User>
-    .Then(user => CheckRoles(user)) // returns Result<User>
+    .Validate(s => !string.IsNullOrWhiteSpace(s), "Username must not be empty")
+    .Then(FindUser)
+    .Then(CheckRoles)
     .Tap(user => _logger.LogInformation("Login: {Name}", user.Name))
-    .Then(user => CreateToken(user))
+    .Then(CreateToken)
     .Finally(
-        onSuccess: token => $"Bearer {token}",
+        onSuccess: value => $"Bearer {value}",
         onFailure: err   => $"Login failed: {err.Message}"
     );
+```
 
-// Async
-var order = await AsyncPipeline<Order>
+### Asynchronous pipeline
+
+```csharp
+var orderMessage = await AsyncPipeline<Order>
     .Start(() => LoadOrderAsync(orderId))
-    .Then(o => ValidateOrder(o))
-    .ThenAsync(o => ReserveStockAsync(o))
-    .ThenAsync(o => ProcessPaymentAsync(o))
-    .ThenAsync(o => SendConfirmationAsync(o))
+    .Then(ValidateOrder)
+    .ThenAsync(ReserveStockAsync)
+    .ThenAsync(ProcessPaymentAsync)
+    .ThenAsync(SendConfirmationAsync)
     .Finally(
-        onSuccess: _ => "🎉 Order placed!",
+        onSuccess: _ => "Order placed successfully",
         onFailure: e => $"Order failed: {e.Message}"
     );
 ```
 
 ---
 
-## 🌐 ASP.NET Core Integration
+## ASP.NET Core Integration
+
+### Setup
 
 ```csharp
-// Program.cs
 builder.Services.AddResulta();
-app.UseResulta(); // Global exception handling → structured JSON errors
+app.UseResulta();
+```
 
-// Controller – zero try/catch needed
+### MVC / Controllers
+
+```csharp
 [ApiController]
 [Route("api/users")]
 public class UserController : ControllerBase
 {
     private readonly UserService _service;
+
+    public UserController(UserService service)
+    {
+        _service = service;
+    }
 
     [HttpGet("{id}")]
     public IActionResult Get(int id)
@@ -216,29 +242,30 @@ public class UserController : ControllerBase
     public IActionResult Delete(int id)
         => _service.DeleteUser(id).ToActionResult(this);
 }
-
-// Minimal API
-app.MapGet("/api/users/{id}", (int id, UserService svc)
-    => svc.GetUser(id).ToMinimalApiResult());
 ```
 
-**Automatic HTTP status code mapping:**
+### Minimal API
 
-| `Error.Code` | HTTP Status |
+```csharp
+app.MapGet("/api/users/{id}", (int id, UserService service)
+    => service.GetUser(id).ToMinimalApiResult());
+```
+
+### Default HTTP mapping
+
+| Error code | HTTP status |
 |---|---|
 | `NOT_FOUND` | `404 Not Found` |
 | `VALIDATION_ERROR` | `400 Bad Request` |
 | `UNAUTHORIZED` | `401 Unauthorized` |
 | `CONFLICT` | `409 Conflict` |
-| _(anything else)_ | `500 Internal Server Error` |
+| any other code | `500 Internal Server Error` |
 
 ---
 
-## 🔗 FluentValidation Bridge
+## FluentValidation Bridge
 
 ```csharp
-// dotnet add package FluentValidation
-
 public class RegisterDtoValidator : AbstractValidator<RegisterDto>
 {
     public RegisterDtoValidator()
@@ -248,16 +275,24 @@ public class RegisterDtoValidator : AbstractValidator<RegisterDto>
         RuleFor(x => x.Age).GreaterThanOrEqualTo(18);
     }
 }
+```
 
-// In your service – returns Result directly
+Use the validator directly in your service layer:
+
+```csharp
 public Result<User> Register(RegisterDto dto) =>
-    _validator.ValidateToResult(dto)
-              .Bind(CreateUser);
+    _validator
+        .ValidateToResult(dto)
+        .Bind(CreateUser);
+```
 
-// Async
+Async variant:
+
+```csharp
 public async Task<Result<User>> RegisterAsync(RegisterDto dto) =>
-    await _validator.ValidateToResultAsync(dto)
-                    .Bind(CreateUserAsync);
+    await _validator
+        .ValidateToResultAsync(dto)
+        .Bind(CreateUserAsync);
 ```
 
 ---
@@ -285,9 +320,10 @@ Resulta/
 └── FluentResults.slnx
 ```
 
+> Note: The internal project and solution names still use `FluentResults`, while the library is presented publicly as `Resulta`.
+
 ---
 
-```md
 ## Releases and Versioning
 
 Resulta follows **Semantic Versioning**:
@@ -297,30 +333,31 @@ Resulta follows **Semantic Versioning**:
 - **PATCH** for fixes and small improvements
 
 For release history, see [CHANGELOG.md](./CHANGELOG.md).  
-For release rules and version bump guidance, see [VERSIONING.md](./VERSIONING.md).
-```
----
-```
-## 🤝 Contributing
+For version bump rules and release guidance, see [VERSIONING.md](./VERSIONING.md).
 
-Contributions, issues and feature requests are welcome!
+---
+
+## Contributing
+
+Contributions, issues and feature requests are welcome.
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/my-feature`)
-3. Commit your changes (`git commit -m 'Add my feature'`)
-4. Push to the branch (`git push origin feature/my-feature`)
+2. Create a feature branch  
+   `git checkout -b feature/my-feature`
+3. Commit your changes  
+   `git commit -m "Add my feature"`
+4. Push your branch  
+   `git push origin feature/my-feature`
 5. Open a Pull Request
 
 ---
 
-## 📄 License
+## License
 
-MIT © [Kentaro](https://github.com/kentaro) – see [LICENSE](LICENSE) for details.
+MIT © Kentaro
+
+See [LICENSE.txt](./LICENSE.txt) for details.
 
 ---
 
-<div align="center">
-
-⭐ **If you find Resulta useful, please consider giving it a star!** ⭐
-
-</div>
+If you find Resulta useful, consider giving the repository a star.
