@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Resulta.Extensions.AspNetCore
+using Resulta;
+
+namespace Resulta.AspNetCore
 {
     // ── Error Response ────────────────────────────────────────────────────────
 

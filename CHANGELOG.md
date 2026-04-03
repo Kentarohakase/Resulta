@@ -14,6 +14,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Updated example code to match the current API shape and compile cleanly.
 - Renamed project structure, solution, and project files from `FluentResults` to `Resulta`.
 - Aligned ASP.NET Core extension methods and namespaces with the `Resulta` package name.
+- Moved ASP.NET Core integration into a dedicated `Resulta.AspNetCore` project.
+- Moved FluentValidation integration into a dedicated `Resulta.FluentValidation` project.
+- Removed ASP.NET Core and FluentValidation dependencies from the core `Resulta` package.
+- Improved package separation between core functionality and optional integrations.
 ### Fixed
 - Fixed invalid default-state behavior in result types.
 - Fixed multiple example build issues caused by outdated API usage.

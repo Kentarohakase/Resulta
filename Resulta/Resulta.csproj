@@ -26,14 +26,4 @@
 		<None Include="README.md" Pack="true" PackagePath="" />
 	</ItemGroup>
 
-	<!-- ASP.NET Core APIs (for AspNetCoreIntegration.cs) -->
-	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
-
-	<!-- FluentValidation (for FluentValidationBridge.cs) -->
-	<ItemGroup>
-		<PackageReference Include="FluentValidation" Version="11.*" />
-	</ItemGroup>
-
 </Project>
