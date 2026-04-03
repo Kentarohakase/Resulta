@@ -287,7 +287,7 @@ Resulta/
 
 ---
 
-```
+```md
 ## Releases and Versioning
 
 Resulta follows **Semantic Versioning**:
