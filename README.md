@@ -262,23 +262,42 @@ public async Task<Result<User>> RegisterAsync(RegisterDto dto) =>
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
-```
+```text
 Resulta/
-├── src/
-│   ├── Result.cs                  # Non-generic Result
-│   ├── ResultT.cs                 # Result<T> with Map, Bind, Match
-│   ├── Error.cs                   # Structured error with code & metadata
-│   └── ResultExtensions.cs        # Async, Try, Combine, Ensure
-└── extensions/
-    ├── ValidationResult.cs        # Multiple validation errors
-    ├── Pipeline.cs                # Railway-Oriented Pipeline
-    ├── AspNetCoreIntegration.cs   # HTTP middleware & helpers
-    └── FluentValidationBridge.cs  # FluentValidation integration
+├── FluentResults/
+│   ├── src/
+│   │   ├── Result.cs
+│   │   ├── ResultT.cs
+│   │   ├── Error.cs
+│   │   └── ResultExtensions.cs
+│   ├── extensions/
+│   │   ├── ValidationResult.cs
+│   │   ├── Pipeline.cs
+│   │   ├── AspNetCoreIntegration.cs
+│   │   └── FluentValidationBridge.cs
+│   ├── FluentResults.csproj
+│   └── README.md
+├── CHANGELOG.md
+├── VERSIONING.md
+├── README.md
+└── FluentResults.slnx
 ```
 
 ---
+
+```
+## Releases and Versioning
+
+Resulta follows **Semantic Versioning**:
+
+- **MAJOR** for breaking changes
+- **MINOR** for backwards-compatible features
+- **PATCH** for fixes and small improvements
+
+For release history, see [CHANGELOG.md](./CHANGELOG.md).  
+For release rules and version bump guidance, see [VERSIONING.md](./VERSIONING.md).
 
 ## 🤝 Contributing
 
