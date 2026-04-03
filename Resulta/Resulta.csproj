@@ -2,28 +2,29 @@
 
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
-		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
 
-		<!-- NuGet Package Info -->
 		<PackageId>Resulta</PackageId>
-		<Version>1.0.0</Version>
+		<Version>2.0.0</Version>
 		<Authors>Kentaro</Authors>
-		<Description>A lightweight C# library for the Result pattern – error handling without exceptions. Includes Railway Pipeline, ValidationResult, ASP.NET Core integration, and FluentValidation bridge.</Description>
-		<PackageTags>result;error-handling;railway;functional;csharp;aspnetcore;fluentvalidation</PackageTags>
-		<PackageProjectUrl>https://github.com/kentarohakase/Resulta</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/kentarohakase/Resulta</RepositoryUrl>
+		<Description>Lightweight Result pattern library for C# with structured errors, validation primitives, helper methods, and pipelines.</Description>
+		<PackageTags>result-pattern;results;error-handling;railway-oriented-programming;validation;dotnet;csharp</PackageTags>
+
+		<RepositoryUrl>https://github.com/Kentarohakase/Resulta</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
 
-	<!-- Include LICENSE and README in the NuGet package -->
 	<ItemGroup>
-		<None Include="LICENSE" Pack="true" PackagePath="" />
-		<None Include="README.md" Pack="true" PackagePath="" />
+		<None Include="..\README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 </Project>

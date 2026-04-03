@@ -1,6 +1,8 @@
 using global::FluentValidation;
 using global::FluentValidation.Results;
+
 using Resulta;
+using Resulta.Extensions;
 namespace Resulta.FluentValidation
 {
     /// <summary>
