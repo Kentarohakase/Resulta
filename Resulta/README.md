@@ -38,13 +38,21 @@ return GetUser(id).Match<IActionResult>(
 ```
 
 ---
-```md
+
 ## Installation
 
 ### Core package
 
 ```bash
 dotnet add package Resulta
+```
+
+### Optional integrations
+
+```bash
+dotnet add package Resulta.AspNetCore
+dotnet add package Resulta.FluentValidation
+```
 
 ---
 
@@ -121,6 +129,7 @@ var length = await result.MapAsync(async text =>
 ### Combine – merge multiple Results
 
 ```csharp
+// params overload – no array needed
 var combined = ResultExtensions.Combine(result1, result2, result3);
 // Fails if any result has failed
 ```
@@ -188,7 +197,7 @@ var token = Pipeline<string>
         onFailure: err => $"Error: {err.Message}"
     );
 
-// Async
+// Async – supports type changes between steps
 var result = await AsyncPipeline<Order>
     .Start(() => LoadOrderAsync(id))
     .Then(order => Validate(order))
@@ -207,8 +216,8 @@ No more try/catch in your controllers.
 
 ```csharp
 // Program.cs
-builder.Services.AddResultas();
-app.UseResultas(); // Global exception handling
+builder.Services.AddResulta();
+app.UseResulta(); // Global exception handling
 
 // Controller
 [ApiController]
@@ -242,7 +251,7 @@ app.MapGet("/api/users/{id}", (int id, UserService svc)
 ### 🔗 FluentValidation Bridge
 
 ```csharp
-// dotnet add package FluentValidation
+// dotnet add package Resulta.FluentValidation
 
 public class RegisterDtoValidator : AbstractValidator<RegisterDto>
 {
@@ -271,16 +280,24 @@ public async Task<Result<User>> RegisterAsync(RegisterDto dto) =>
 
 ```
 Resulta/
-├── src/
-│   ├── Result.cs                  # Non-generic Result (void operations)
-│   ├── ResultT.cs                 # Result<T> with Map, Bind, Match
-│   ├── Error.cs                   # Structured error with code & metadata
-│   └── ResultExtensions.cs        # Async support, Try, Combine, Ensure
-└── extensions/
-    ├── ValidationResult.cs        # Collect multiple validation errors
-    ├── Pipeline.cs                # Railway-Oriented Pipeline (sync & async)
-    ├── AspNetCoreIntegration.cs   # HTTP middleware & controller helpers
-    └── FluentValidationBridge.cs  # FluentValidation integration
+├── Resulta/
+│   ├── src/
+│   │   ├── Result.cs
+│   │   ├── ResultT.cs
+│   │   ├── Error.cs
+│   │   └── ResultExtensions.cs
+│   └── extensions/
+│       ├── ValidationResult.cs
+│       └── Pipeline.cs
+├── Resulta.AspNetCore/
+│   └── AspNetCoreIntegration.cs
+├── Resulta.FluentValidation/
+│   └── FluentValidationBridge.cs
+├── Resulta.Tests/
+├── CHANGELOG.md
+├── VERSIONING.md
+├── README.md
+└── Resulta.slnx
 ```
 
 ---

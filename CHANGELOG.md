@@ -7,7 +7,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 
-## [2.0.0] -2026-04-03
+## [2.0.1] - 2026-04-07
+
+### Fixed
+- Fixed namespace ambiguity between `FluentValidation.Results.ValidationResult` and `Resulta.Extensions.ValidationResult<T>` in `FluentValidationBridge` by introducing a `using` alias (`FVResult`).
+- Fixed `Pipeline<T>.ThenAsync` being restricted to the same type `T` — added a generic `ThenAsync<TOut>` overload to both `Pipeline<T>` and `AsyncPipeline<T>` to allow type changes between steps.
+- Fixed missing `params` overload for `ResultExtensions.Combine<T>` — generic results can now be combined inline without wrapping in an array.
+- Fixed broken Markdown code block in `Resulta/README.md` that caused all content after the Installation section to render incorrectly.
+- Fixed missing space in `CHANGELOG.md` date for version `2.0.0` (`-2026-04-03` → `- 2026-04-03`).
+- Removed empty `UnitTest1` test class that produced a false-positive green result in CI.
+- Removed orphaned stub projects under `src/` that were not referenced in the solution.
+
+
+## [2.0.0] - 2026-04-03
 
 ### Added
 - Added automated tests for `Result`, `Result<T>`, `ValidationResult<T>`, and `Validator<T>`.
@@ -21,9 +33,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Moved FluentValidation integration into a dedicated `Resulta.FluentValidation` project.
 - Removed ASP.NET Core and FluentValidation dependencies from the core `Resulta` package.
 - Improved package separation between core functionality and optional integrations.
+
 ### Fixed
 - Fixed invalid default-state behavior in result types.
 - Fixed multiple example build issues caused by outdated API usage.
+
 
 ## [1.0.0] - 2026-04-03
 
@@ -43,6 +57,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Implicit conversions from values and errors to `Result<T>`.
 - `.NET 10` support.
 
-[Unreleased]: https://github.com/Kentarohakase/Resulta/compare/v1.0.0...HEAD
-[2.0.0]: https://github.com/Kentarohakase/Resulta/compare/tag/v2.0.0
+[Unreleased]: https://github.com/Kentarohakase/Resulta/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/Kentarohakase/Resulta/compare/v2.0.0...v2.0.1
+[2.0.0]: https://github.com/Kentarohakase/Resulta/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/Kentarohakase/Resulta/releases/tag/v1.0.0
