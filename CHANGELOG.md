@@ -15,6 +15,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Fixed missing `params` overload for `ResultExtensions.Combine<T>` — generic results can now be combined inline without wrapping in an array.
 - Fixed broken Markdown code block in `Resulta/README.md` that caused all content after the Installation section to render incorrectly.
 - Fixed missing space in `CHANGELOG.md` date for version `2.0.0` (`-2026-04-03` → `- 2026-04-03`).
+
+### Removed
 - Removed empty `UnitTest1` test class that produced a false-positive green result in CI.
 - Removed orphaned stub projects under `src/` that were not referenced in the solution.
 
