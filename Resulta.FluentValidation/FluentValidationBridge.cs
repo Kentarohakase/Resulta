@@ -11,15 +11,21 @@ namespace Resulta.FluentValidation
 {
   /// <summary>
   /// Bridge between FluentValidation and Resulta.
-  /// Converts FluentValidation results directly into Result types.
+  /// Provides extension methods to convert FluentValidation results directly into
+  /// <see cref="Result{T}"/> and <see cref="ValidationResult{T}"/> types.
   /// </summary>
   public static class FluentValidationBridge
   {
     // ── Sync ─────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Validates the instance and returns a Result&lt;T&gt; directly.
+    /// Validates <paramref name="instance"/> synchronously and returns a <see cref="Result{T}"/> directly.
+    /// On success, the result wraps the original instance.
+    /// On failure, errors are chained as causes on the first error.
     /// </summary>
+    /// <typeparam name="T">The type of the instance being validated.</typeparam>
+    /// <param name="validator">The FluentValidation validator to use.</param>
+    /// <param name="instance">The instance to validate.</param>
     public static Result<T> ValidateToResult<T>(this IValidator<T> validator, T instance)
     {
       var validationResult = validator.Validate(instance);
@@ -27,8 +33,13 @@ namespace Resulta.FluentValidation
     }
 
     /// <summary>
-    /// Converts a FluentValidation ValidationResult into a Resulta Result&lt;T&gt;.
+    /// Converts a FluentValidation <see cref="FVResult"/> into a Resulta <see cref="Result{T}"/>.
+    /// On success, wraps <paramref name="value"/>. On failure, chains all errors as causes.
+    /// Attaches <c>attemptedValue</c> and <c>severity</c> as metadata on each error.
     /// </summary>
+    /// <typeparam name="T">The type of the validated value.</typeparam>
+    /// <param name="validationResult">The FluentValidation result to convert.</param>
+    /// <param name="value">The value to wrap on success.</param>
     public static Result<T> ToResult<T>(this FVResult validationResult, T value)
     {
       if (validationResult.IsValid)
@@ -40,7 +51,6 @@ namespace Resulta.FluentValidation
               .WithMetadata("severity", f.Severity.ToString()))
           .ToList();
 
-      // Chain all errors: first error as root, rest as causes
       var root = errors[0];
       for (int i = 1; i < errors.Count; i++)
         root = root.WithCause(errors[i]);
@@ -49,8 +59,13 @@ namespace Resulta.FluentValidation
     }
 
     /// <summary>
-    /// Converts a FluentValidation result into a ValidationResult&lt;T&gt; (with all errors as a list).
+    /// Validates <paramref name="instance"/> synchronously and returns a <see cref="ValidationResult{T}"/>
+    /// containing all validation errors at once.
+    /// Attaches <c>attemptedValue</c> as metadata on each error.
     /// </summary>
+    /// <typeparam name="T">The type of the instance being validated.</typeparam>
+    /// <param name="validator">The FluentValidation validator to use.</param>
+    /// <param name="instance">The instance to validate.</param>
     public static ValidationResult<T> ToValidationResult<T>(
         this IValidator<T> validator, T instance)
     {
@@ -70,8 +85,14 @@ namespace Resulta.FluentValidation
     // ── Async ─────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Asynchronously validates the instance and returns a Result&lt;T&gt;.
+    /// Validates <paramref name="instance"/> asynchronously and returns a <see cref="Result{T}"/> directly.
+    /// On success, the result wraps the original instance.
+    /// On failure, errors are chained as causes on the first error.
     /// </summary>
+    /// <typeparam name="T">The type of the instance being validated.</typeparam>
+    /// <param name="validator">The FluentValidation validator to use.</param>
+    /// <param name="instance">The instance to validate.</param>
+    /// <param name="ct">An optional cancellation token.</param>
     public static async Task<Result<T>> ValidateToResultAsync<T>(
         this IValidator<T> validator, T instance,
         CancellationToken ct = default)
@@ -81,8 +102,13 @@ namespace Resulta.FluentValidation
     }
 
     /// <summary>
-    /// Asynchronously converts a FluentValidation result into a ValidationResult&lt;T&gt;.
+    /// Validates <paramref name="instance"/> asynchronously and returns a <see cref="ValidationResult{T}"/>
+    /// containing all validation errors at once.
     /// </summary>
+    /// <typeparam name="T">The type of the instance being validated.</typeparam>
+    /// <param name="validator">The FluentValidation validator to use.</param>
+    /// <param name="instance">The instance to validate.</param>
+    /// <param name="ct">An optional cancellation token.</param>
     public static async Task<ValidationResult<T>> ToValidationResultAsync<T>(
         this IValidator<T> validator, T instance,
         CancellationToken ct = default)

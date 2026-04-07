@@ -7,6 +7,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 
+## [2.1.0] - 2026-04-07
+
+### Added
+- Added `Result.OkIf` and `Result.FailIf` factory methods, both in generic and non-generic variants, for concise conditional result creation.
+- Added `ResultExtensions.CombineAsync` for awaiting and combining multiple async `Result<T>` tasks in parallel, available as both `params` and `IEnumerable` overloads.
+- Added `Validate` (with string and `Error` overloads) to `AsyncPipeline<T>` for inline predicate validation within async pipelines.
+- Added `Tap` to `AsyncPipeline<T>` for synchronous side effects within async pipelines.
+- Added `TapAsync` to `AsyncPipeline<T>` for asynchronous side effects within async pipelines.
+- Added full XML documentation to all public types across all packages, resolving all CS1591 compiler warnings.
+- Added tests for `OkIf` / `FailIf`, `CombineAsync`, and the new `AsyncPipeline<T>` methods.
+
+
 ## [2.0.1] - 2026-04-07
 
 ### Fixed
@@ -59,7 +71,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Implicit conversions from values and errors to `Result<T>`.
 - `.NET 10` support.
 
-[Unreleased]: https://github.com/Kentarohakase/Resulta/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/Kentarohakase/Resulta/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/Kentarohakase/Resulta/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/Kentarohakase/Resulta/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/Kentarohakase/Resulta/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/Kentarohakase/Resulta/releases/tag/v1.0.0
