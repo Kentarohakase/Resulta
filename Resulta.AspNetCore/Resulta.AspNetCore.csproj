@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 
 		<PackageId>Resulta.AspNetCore</PackageId>
-		<Version>2.0.1</Version>
+		<Version>2.1.0</Version>
 		<Authors>Kentaro</Authors>
 		<Description>ASP.NET Core integration for Resulta, including HTTP result mapping and application setup helpers.</Description>
 		<PackageTags>result-pattern;aspnetcore;minimal-api;mvc;webapi;http;dotnet;csharp</PackageTags>
