@@ -40,7 +40,7 @@ namespace Resulta
     /// <param name="code">An optional machine-readable error code.</param>
     /// <param name="exception">An optional exception that caused this error.</param>
     /// <param name="causedBy">An optional root cause error.</param>
-    /// <param name="metadata">Optional additional metadata.</param>
+    /// <param name="metadata">Optional additional metadata (defensively copied; mutating the original dictionary does not affect this error).</param>
     /// <exception cref="ArgumentException">Thrown when <paramref name="message"/> is null or whitespace.</exception>
     public Error(string message, string? code = null, Exception? exception = null,
                  Error? causedBy = null, Dictionary<string, object>? metadata = null)
@@ -52,7 +52,9 @@ namespace Resulta
       Code = code;
       Exception = exception;
       CausedBy = causedBy;
-      Metadata = metadata ?? new Dictionary<string, object>();
+      Metadata = metadata is null
+          ? new Dictionary<string, object>()
+          : new Dictionary<string, object>(metadata);
     }
 
     // ── Fluent Builder ───────────────────────────────────────────────────

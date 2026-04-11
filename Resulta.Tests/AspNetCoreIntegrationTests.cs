@@ -1,14 +1,18 @@
-﻿using System.Net;
+using System;
+using System.IO;
+using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 using Resulta;
 using Resulta.AspNetCore;
@@ -17,15 +21,12 @@ using Xunit;
 
 namespace Resulta.Tests;
 
-// ── ToActionResult ────────────────────────────────────────────────────────────
-
 public sealed class ResultHttpExtensionsTests
 {
   private readonly ControllerBase _controller;
 
   public ResultHttpExtensionsTests()
   {
-    // Minimal controller setup for ActionResult conversion
     var services = new ServiceCollection()
         .AddMvc()
         .Services
@@ -42,8 +43,6 @@ public sealed class ResultHttpExtensionsTests
       }
     };
   }
-
-  // ── Result<T>.ToActionResult ──────────────────────────────────────────────
 
   [Fact]
   public void ToActionResult_Should_Return_200_When_Result_Is_Ok()
@@ -129,8 +128,6 @@ public sealed class ResultHttpExtensionsTests
     Assert.Equal("INTERNAL_ERROR", body.Code);
   }
 
-  // ── Result.ToActionResult (non-generic) ───────────────────────────────────
-
   [Fact]
   public void ToActionResult_NonGeneric_Should_Return_204_When_Result_Is_Ok()
   {
@@ -166,6 +163,42 @@ public sealed class ResultHttpExtensionsTests
   }
 
   [Fact]
+  public void ToActionResult_NonGeneric_Should_Include_Field_For_VALIDATION_ERROR()
+  {
+    var result = Result.Fail(Error.Validation("email", "Ungültig"));
+
+    var actionResult = result.ToActionResult(_controller);
+
+    var badRequest = Assert.IsType<BadRequestObjectResult>(actionResult);
+    var body = Assert.IsType<ErrorResponse>(badRequest.Value);
+    Assert.Equal("email", body.Field);
+  }
+
+  [Fact]
+  public void ToActionResult_NonGeneric_Should_Return_401_When_Error_Code_Is_UNAUTHORIZED()
+  {
+    var result = Result.Fail(Error.Unauthorized("Nicht erlaubt"));
+
+    var actionResult = result.ToActionResult(_controller);
+
+    var unauthorized = Assert.IsType<UnauthorizedObjectResult>(actionResult);
+    var body = Assert.IsType<ErrorResponse>(unauthorized.Value);
+    Assert.Equal("UNAUTHORIZED", body.Code);
+  }
+
+  [Fact]
+  public void ToActionResult_NonGeneric_Should_Return_409_When_Error_Code_Is_CONFLICT()
+  {
+    var result = Result.Fail(Error.Conflict("Duplikat"));
+
+    var actionResult = result.ToActionResult(_controller);
+
+    var conflict = Assert.IsType<ConflictObjectResult>(actionResult);
+    var body = Assert.IsType<ErrorResponse>(conflict.Value);
+    Assert.Equal("CONFLICT", body.Code);
+  }
+
+  [Fact]
   public void ToActionResult_NonGeneric_Should_Return_500_For_Unknown_Error_Code()
   {
     var result = Result.Fail(new Error("Unbekannt").WithCode("UNKNOWN"));
@@ -177,72 +210,118 @@ public sealed class ResultHttpExtensionsTests
   }
 }
 
-// ── ToMinimalApiResult ────────────────────────────────────────────────────────
-
 public sealed class MinimalApiExtensionsTests
 {
+  private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
+
+  private static IServiceProvider CreateMinimalApiServices()
+  {
+    var services = new ServiceCollection();
+    services.AddLogging();
+    services.AddOptions();
+    services.AddSingleton<IOptions<Microsoft.AspNetCore.Http.Json.JsonOptions>>(Options.Create(new Microsoft.AspNetCore.Http.Json.JsonOptions()));
+    return services.BuildServiceProvider();
+  }
+
+  private static async Task<(int StatusCode, ErrorResponse? Body)> ExecuteMinimalAsync(IResult result)
+  {
+    var ctx = new DefaultHttpContext
+    {
+      RequestServices = CreateMinimalApiServices()
+    };
+    ctx.Response.Body = new MemoryStream();
+
+    await result.ExecuteAsync(ctx);
+
+    ctx.Response.Body.Seek(0, SeekOrigin.Begin);
+    var json = await new StreamReader(ctx.Response.Body).ReadToEndAsync();
+    if (string.IsNullOrWhiteSpace(json))
+      return (ctx.Response.StatusCode, null);
+
+    var body = JsonSerializer.Deserialize<ErrorResponse>(json, JsonOptions);
+    return (ctx.Response.StatusCode, body);
+  }
+
   [Fact]
-  public void ToMinimalApiResult_Should_Return_Ok_When_Result_Is_Ok()
+  public async Task ToMinimalApiResult_Should_Return_Ok_When_Result_Is_Ok()
   {
     var result = Result.Ok(42);
 
     var apiResult = result.ToMinimalApiResult();
 
-    Assert.NotNull(apiResult);
+    var ctx = new DefaultHttpContext
+    {
+      RequestServices = CreateMinimalApiServices()
+    };
+    ctx.Response.Body = new MemoryStream();
+
+    await apiResult.ExecuteAsync(ctx);
+
+    Assert.Equal(StatusCodes.Status200OK, ctx.Response.StatusCode);
   }
 
   [Fact]
-  public void ToMinimalApiResult_Should_Return_NotFound_When_Error_Code_Is_NOT_FOUND()
+  public async Task ToMinimalApiResult_Should_Map_NOT_FOUND_Consistently()
   {
     var result = Result.Fail<int>(Error.NotFound("User"));
 
-    var apiResult = result.ToMinimalApiResult();
+    var (status, body) = await ExecuteMinimalAsync(result.ToMinimalApiResult());
 
-    Assert.NotNull(apiResult);
+    Assert.Equal(StatusCodes.Status404NotFound, status);
+    Assert.NotNull(body);
+    Assert.Equal("NOT_FOUND", body!.Code);
   }
 
   [Fact]
-  public void ToMinimalApiResult_Should_Return_BadRequest_When_Error_Code_Is_VALIDATION_ERROR()
+  public async Task ToMinimalApiResult_Should_Include_Field_For_VALIDATION_ERROR()
   {
     var result = Result.Fail<int>(Error.Validation("email", "Ungültig"));
 
-    var apiResult = result.ToMinimalApiResult();
+    var (status, body) = await ExecuteMinimalAsync(result.ToMinimalApiResult());
 
-    Assert.NotNull(apiResult);
+    Assert.Equal(StatusCodes.Status400BadRequest, status);
+    Assert.NotNull(body);
+    Assert.Equal("VALIDATION_ERROR", body!.Code);
+    Assert.Equal("email", body.Field);
   }
 
   [Fact]
-  public void ToMinimalApiResult_Should_Return_Unauthorized_When_Error_Code_Is_UNAUTHORIZED()
+  public async Task ToMinimalApiResult_Should_Return_Structured_Body_For_UNAUTHORIZED()
   {
-    var result = Result.Fail<int>(Error.Unauthorized());
+    var result = Result.Fail<int>(Error.Unauthorized("Kein Zugriff"));
 
-    var apiResult = result.ToMinimalApiResult();
+    var (status, body) = await ExecuteMinimalAsync(result.ToMinimalApiResult());
 
-    Assert.NotNull(apiResult);
+    Assert.Equal(StatusCodes.Status401Unauthorized, status);
+    Assert.NotNull(body);
+    Assert.Equal("UNAUTHORIZED", body!.Code);
+    Assert.Contains("Kein Zugriff", body.Message, StringComparison.Ordinal);
   }
 
   [Fact]
-  public void ToMinimalApiResult_Should_Return_Conflict_When_Error_Code_Is_CONFLICT()
+  public async Task ToMinimalApiResult_Should_Map_CONFLICT_Consistently()
   {
     var result = Result.Fail<int>(Error.Conflict("Bereits vorhanden"));
 
-    var apiResult = result.ToMinimalApiResult();
+    var (status, body) = await ExecuteMinimalAsync(result.ToMinimalApiResult());
 
-    Assert.NotNull(apiResult);
+    Assert.Equal(StatusCodes.Status409Conflict, status);
+    Assert.NotNull(body);
+    Assert.Equal("CONFLICT", body!.Code);
   }
 
   [Fact]
-  public void ToMinimalApiResult_Should_Return_Problem_For_Unknown_Error_Code()
+  public async Task ToMinimalApiResult_Should_Return_500_Internal_Error_For_Unknown_Code()
   {
     var result = Result.Fail<int>(new Error("Unbekannt").WithCode("UNKNOWN"));
 
-    var apiResult = result.ToMinimalApiResult();
+    var (status, body) = await ExecuteMinimalAsync(result.ToMinimalApiResult());
 
-    Assert.NotNull(apiResult);
+    Assert.Equal(StatusCodes.Status500InternalServerError, status);
+    Assert.NotNull(body);
+    Assert.Equal("INTERNAL_ERROR", body!.Code);
   }
 }
-
-// ── ResultMiddleware ──────────────────────────────────────────────────────────
 
 public sealed class ResultMiddlewareTests
 {
@@ -333,7 +412,5 @@ public sealed class ResultMiddlewareTests
     Assert.Contains("unexpected error", body, StringComparison.OrdinalIgnoreCase);
   }
 }
-
-// ── Helper ────────────────────────────────────────────────────────────────────
 
 internal sealed class TestController : ControllerBase { }

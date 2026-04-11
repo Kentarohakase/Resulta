@@ -97,6 +97,10 @@ namespace Resulta
     /// <summary>Creates a successful <see cref="Result{T}"/> with the given value.</summary>
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="value">The success value.</param>
+    /// <remarks>
+    /// For reference types <typeparamref name="T"/>, <paramref name="value"/> may be <c>null</c>; the result is still successful.
+    /// If <c>null</c> is invalid in your domain, validate explicitly and return <see cref="Fail{T}(Error)"/> instead of using <see cref="Ok{T}"/>.
+    /// </remarks>
     public static Result<T> Ok<T>(T value) => Result<T>.Ok(value);
 
     /// <summary>Creates a failed <see cref="Result{T}"/> with the given error message.</summary>

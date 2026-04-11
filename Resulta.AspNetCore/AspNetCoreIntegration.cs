@@ -10,6 +10,13 @@ using Resulta;
 
 namespace Resulta.AspNetCore
 {
+  internal static class ResultHttpMapping
+  {
+    /// <summary>Optional <c>field</c> from <see cref="Error.Metadata"/> for <c>VALIDATION_ERROR</c> responses.</summary>
+    internal static string? ValidationFieldFromMetadata(Error err) =>
+        err.Metadata.TryGetValue("field", out var v) ? v?.ToString() : null;
+  }
+
   /// <summary>
   /// Standardized JSON error response body returned by the API on failure.
   /// </summary>
@@ -38,7 +45,7 @@ namespace Resulta.AspNetCore
             {
               "NOT_FOUND" => controller.NotFound(new ErrorResponse(err.Message, err.Code)),
               "VALIDATION_ERROR" => controller.BadRequest(new ErrorResponse(err.Message, err.Code,
-                                          err.Metadata.TryGetValue("field", out var f) ? f?.ToString() : null)),
+                                          ResultHttpMapping.ValidationFieldFromMetadata(err))),
               "UNAUTHORIZED" => controller.Unauthorized(new ErrorResponse(err.Message, err.Code)),
               "CONFLICT" => controller.Conflict(new ErrorResponse(err.Message, err.Code)),
               _ => controller.StatusCode(500, new ErrorResponse("An internal error occurred.", "INTERNAL_ERROR"))
@@ -57,8 +64,10 @@ namespace Resulta.AspNetCore
             onFailure: err => err.Code switch
             {
               "NOT_FOUND" => controller.NotFound(new ErrorResponse(err.Message, err.Code)),
-              "VALIDATION_ERROR" => controller.BadRequest(new ErrorResponse(err.Message, err.Code)),
+              "VALIDATION_ERROR" => controller.BadRequest(new ErrorResponse(err.Message, err.Code,
+                                          ResultHttpMapping.ValidationFieldFromMetadata(err))),
               "UNAUTHORIZED" => controller.Unauthorized(new ErrorResponse(err.Message, err.Code)),
+              "CONFLICT" => controller.Conflict(new ErrorResponse(err.Message, err.Code)),
               _ => controller.StatusCode(500, new ErrorResponse("An internal error occurred.", "INTERNAL_ERROR"))
             }
         );
@@ -112,6 +121,12 @@ namespace Resulta.AspNetCore
     /// with automatic HTTP status code mapping based on the error code.
     /// Returns <c>200 OK</c> on success, or an appropriate error response on failure.
     /// </summary>
+    /// <remarks>
+    /// Mapping matches <see cref="ResultHttpExtensions.ToActionResult{T}(Result{T}, ControllerBase)"/>:
+    /// <c>VALIDATION_ERROR</c> includes optional <c>field</c> from <see cref="Error.Metadata"/>;
+    /// <c>UNAUTHORIZED</c> returns <c>401</c> with a JSON <see cref="ErrorResponse"/> body (not an empty response);
+    /// unknown error codes yield <c>500</c> with code <c>INTERNAL_ERROR</c>, same as MVC.
+    /// </remarks>
     /// <typeparam name="T">The type of the success value.</typeparam>
     /// <param name="result">The result to convert.</param>
     public static IResult ToMinimalApiResult<T>(this Result<T> result)
@@ -120,10 +135,15 @@ namespace Resulta.AspNetCore
             onFailure: err => err.Code switch
             {
               "NOT_FOUND" => Results.NotFound(new ErrorResponse(err.Message, err.Code)),
-              "VALIDATION_ERROR" => Results.BadRequest(new ErrorResponse(err.Message, err.Code)),
-              "UNAUTHORIZED" => Results.Unauthorized(),
+              "VALIDATION_ERROR" => Results.BadRequest(new ErrorResponse(err.Message, err.Code,
+                                          ResultHttpMapping.ValidationFieldFromMetadata(err))),
+              "UNAUTHORIZED" => Results.Json(
+                  new ErrorResponse(err.Message, err.Code),
+                  statusCode: StatusCodes.Status401Unauthorized),
               "CONFLICT" => Results.Conflict(new ErrorResponse(err.Message, err.Code)),
-              _ => Results.Problem(err.Message)
+              _ => Results.Json(
+                  new ErrorResponse("An internal error occurred.", "INTERNAL_ERROR"),
+                  statusCode: StatusCodes.Status500InternalServerError)
             }
         );
   }

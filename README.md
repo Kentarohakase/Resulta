@@ -144,6 +144,10 @@ string message = result.Match(
 );
 ```
 
+### Success and null (reference types)
+
+For reference types, `Result<T>.Ok(value)` still represents **success** when `value` is `null`. If `null` is invalid in your domain, validate explicitly and return `Result<T>.Fail(...)` instead. Value types are unaffected (`Result<int>.Ok` always carries a value).
+
 ### Try and TryAsync
 
 ```csharp
@@ -277,6 +281,8 @@ app.MapGet("/api/users/{id}", (int id, UserService service)
 | `CONFLICT` | `409 Conflict` |
 | any other code | `500 Internal Server Error` |
 
+MVC (`ToActionResult`) and Minimal APIs (`ToMinimalApiResult`) use the same rules: validation errors may include a `field` property when present in `Error.Metadata`, and unknown codes return a JSON body with code `INTERNAL_ERROR`.
+
 ---
 
 ## FluentValidation Integration
@@ -318,6 +324,8 @@ Resulta/
 │   └── AspNetCoreIntegration.cs
 ├── Resulta.FluentValidation/
 │   └── FluentValidationBridge.cs
+├── samples/
+│   └── Resulta.Samples/     # optional console demos (not packed)
 ├── Resulta.Tests/
 ├── .github/
 │   └── workflows/

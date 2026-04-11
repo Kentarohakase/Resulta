@@ -53,6 +53,10 @@ namespace Resulta
 
     /// <summary>Creates a successful result with the given value.</summary>
     /// <param name="value">The success value.</param>
+    /// <remarks>
+    /// For reference types <typeparamref name="T"/>, <paramref name="value"/> may be <c>null</c>; the result is still successful.
+    /// If <c>null</c> is invalid in your domain, validate explicitly and return <see cref="Fail(Error)"/> instead of using <see cref="Ok"/>.
+    /// </remarks>
     public static Result<T> Ok(T value) => new Result<T>(value, null, true);
 
     /// <summary>Creates a failed result with the given error message.</summary>

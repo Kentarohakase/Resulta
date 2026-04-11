@@ -22,7 +22,10 @@ namespace Resulta.Extensions
     /// <summary>Starts a new pipeline from an existing <see cref="Result{T}"/>.</summary>
     /// <param name="result">The result to start the pipeline with.</param>
     public static Pipeline<T> Start(Result<T> result)
-        => new Pipeline<T>(result);
+    {
+      ArgumentNullException.ThrowIfNull(result);
+      return new Pipeline<T>(result);
+    }
 
     // ── Steps ────────────────────────────────────────────────────────────
 
@@ -33,7 +36,10 @@ namespace Resulta.Extensions
     /// <typeparam name="TOut">The type of the next step's value.</typeparam>
     /// <param name="step">The function to apply to the current value.</param>
     public Pipeline<TOut> Then<TOut>(Func<T, Result<TOut>> step)
-        => new Pipeline<TOut>(_current.Bind(step));
+    {
+      ArgumentNullException.ThrowIfNull(step);
+      return new Pipeline<TOut>(_current.Bind(step));
+    }
 
     /// <summary>
     /// Chains a step that returns a plain value of type <typeparamref name="TOut"/>.
@@ -42,7 +48,10 @@ namespace Resulta.Extensions
     /// <typeparam name="TOut">The type of the next step's value.</typeparam>
     /// <param name="step">The function to apply to the current value.</param>
     public Pipeline<TOut> Then<TOut>(Func<T, TOut> step)
-        => new Pipeline<TOut>(_current.Map(step));
+    {
+      ArgumentNullException.ThrowIfNull(step);
+      return new Pipeline<TOut>(_current.Map(step));
+    }
 
     /// <summary>
     /// Validates the current value against <paramref name="predicate"/>.
@@ -52,7 +61,11 @@ namespace Resulta.Extensions
     /// <param name="predicate">The condition the value must satisfy.</param>
     /// <param name="errorMessage">The error message to use when the predicate fails.</param>
     public Pipeline<T> Validate(Func<T, bool> predicate, string errorMessage)
-        => new Pipeline<T>(_current.Ensure(predicate, errorMessage));
+    {
+      ArgumentNullException.ThrowIfNull(predicate);
+      ArgumentException.ThrowIfNullOrWhiteSpace(errorMessage);
+      return new Pipeline<T>(_current.Ensure(predicate, errorMessage));
+    }
 
     /// <summary>
     /// Validates the current value against <paramref name="predicate"/>.
@@ -62,7 +75,11 @@ namespace Resulta.Extensions
     /// <param name="predicate">The condition the value must satisfy.</param>
     /// <param name="error">The error to use when the predicate fails.</param>
     public Pipeline<T> Validate(Func<T, bool> predicate, Error error)
-        => new Pipeline<T>(_current.Ensure(predicate, error));
+    {
+      ArgumentNullException.ThrowIfNull(predicate);
+      ArgumentNullException.ThrowIfNull(error);
+      return new Pipeline<T>(_current.Ensure(predicate, error));
+    }
 
     /// <summary>
     /// Executes a side effect <paramref name="action"/> if the pipeline is still successful.
@@ -71,7 +88,10 @@ namespace Resulta.Extensions
     /// </summary>
     /// <param name="action">The side effect to execute, receiving the current value.</param>
     public Pipeline<T> Tap(Action<T> action)
-        => new Pipeline<T>(_current.OnSuccess(action));
+    {
+      ArgumentNullException.ThrowIfNull(action);
+      return new Pipeline<T>(_current.OnSuccess(action));
+    }
 
     // ── Termination ──────────────────────────────────────────────────────
 
@@ -83,7 +103,11 @@ namespace Resulta.Extensions
     /// <param name="onSuccess">Invoked with the value when the pipeline succeeded.</param>
     /// <param name="onFailure">Invoked with the error when the pipeline failed.</param>
     public TOut Finally<TOut>(Func<T, TOut> onSuccess, Func<Error, TOut> onFailure)
-        => _current.Match(onSuccess, onFailure);
+    {
+      ArgumentNullException.ThrowIfNull(onSuccess);
+      ArgumentNullException.ThrowIfNull(onFailure);
+      return _current.Match(onSuccess, onFailure);
+    }
 
     /// <summary>
     /// Terminates the pipeline with void actions for both the success and failure case.
@@ -91,7 +115,11 @@ namespace Resulta.Extensions
     /// <param name="onSuccess">Invoked with the value when the pipeline succeeded.</param>
     /// <param name="onFailure">Invoked with the error when the pipeline failed.</param>
     public void Finally(Action<T> onSuccess, Action<Error> onFailure)
-        => _current.Match(onSuccess, onFailure);
+    {
+      ArgumentNullException.ThrowIfNull(onSuccess);
+      ArgumentNullException.ThrowIfNull(onFailure);
+      _current.Match(onSuccess, onFailure);
+    }
 
     /// <summary>Returns the underlying <see cref="Result{T}"/> without handling it.</summary>
     public Result<T> Build() => _current;
@@ -104,7 +132,10 @@ namespace Resulta.Extensions
     /// </summary>
     /// <param name="step">The async function to apply to the current value.</param>
     public AsyncPipeline<T> ThenAsync(Func<T, Task<Result<T>>> step)
-        => new AsyncPipeline<T>(Task.FromResult(_current)).ThenAsync(step);
+    {
+      ArgumentNullException.ThrowIfNull(step);
+      return new AsyncPipeline<T>(Task.FromResult(_current)).ThenAsync(step);
+    }
 
     /// <summary>
     /// Transitions to an <see cref="AsyncPipeline{TOut}"/> by chaining an async step
@@ -113,7 +144,10 @@ namespace Resulta.Extensions
     /// <typeparam name="TOut">The type of the next step's value.</typeparam>
     /// <param name="step">The async function to apply to the current value.</param>
     public AsyncPipeline<TOut> ThenAsync<TOut>(Func<T, Task<Result<TOut>>> step)
-        => new AsyncPipeline<TOut>(Task.FromResult(_current).Bind(v => step(v)));
+    {
+      ArgumentNullException.ThrowIfNull(step);
+      return new AsyncPipeline<TOut>(Task.FromResult(_current).Bind(v => step(v)));
+    }
   }
 
   /// <summary>
@@ -133,7 +167,12 @@ namespace Resulta.Extensions
     /// </summary>
     /// <param name="factory">A factory function that produces the initial async result.</param>
     public static AsyncPipeline<T> Start(Func<Task<Result<T>>> factory)
-        => new AsyncPipeline<T>(factory());
+    {
+      ArgumentNullException.ThrowIfNull(factory);
+      var task = factory();
+      ArgumentNullException.ThrowIfNull(task);
+      return new AsyncPipeline<T>(task);
+    }
 
     // ── Steps ────────────────────────────────────────────────────────────
 
@@ -143,7 +182,10 @@ namespace Resulta.Extensions
     /// </summary>
     /// <param name="step">The async function to apply to the current value.</param>
     public AsyncPipeline<T> ThenAsync(Func<T, Task<Result<T>>> step)
-        => new AsyncPipeline<T>(_task.Bind(v => step(v)));
+    {
+      ArgumentNullException.ThrowIfNull(step);
+      return new AsyncPipeline<T>(_task.Bind(v => step(v)));
+    }
 
     /// <summary>
     /// Chains an async step with a type change to <typeparamref name="TOut"/>.
@@ -152,7 +194,10 @@ namespace Resulta.Extensions
     /// <typeparam name="TOut">The type of the next step's value.</typeparam>
     /// <param name="step">The async function to apply to the current value.</param>
     public AsyncPipeline<TOut> ThenAsync<TOut>(Func<T, Task<Result<TOut>>> step)
-        => new AsyncPipeline<TOut>(_task.Bind(step));
+    {
+      ArgumentNullException.ThrowIfNull(step);
+      return new AsyncPipeline<TOut>(_task.Bind(step));
+    }
 
     /// <summary>
     /// Chains a synchronous step. Skipped without invoking <paramref name="step"/> if the pipeline has already failed.
@@ -160,7 +205,10 @@ namespace Resulta.Extensions
     /// <typeparam name="TOut">The type of the next step's value.</typeparam>
     /// <param name="step">The function to apply to the current value.</param>
     public AsyncPipeline<TOut> Then<TOut>(Func<T, Result<TOut>> step)
-        => new AsyncPipeline<TOut>(_task.Bind(v => Task.FromResult(step(v))));
+    {
+      ArgumentNullException.ThrowIfNull(step);
+      return new AsyncPipeline<TOut>(_task.Bind(v => Task.FromResult(step(v))));
+    }
 
     /// <summary>
     /// Validates the current value against <paramref name="predicate"/>.
@@ -171,6 +219,8 @@ namespace Resulta.Extensions
     /// <param name="errorMessage">The error message to use when the predicate fails.</param>
     public AsyncPipeline<T> Validate(Func<T, bool> predicate, string errorMessage)
     {
+      ArgumentNullException.ThrowIfNull(predicate);
+      ArgumentException.ThrowIfNullOrWhiteSpace(errorMessage);
       var next = _task.Bind(v =>
           Task.FromResult(
               predicate(v)
@@ -189,6 +239,8 @@ namespace Resulta.Extensions
     /// <param name="error">The error to use when the predicate fails.</param>
     public AsyncPipeline<T> Validate(Func<T, bool> predicate, Error error)
     {
+      ArgumentNullException.ThrowIfNull(predicate);
+      ArgumentNullException.ThrowIfNull(error);
       var next = _task.Bind(v =>
           Task.FromResult(
               predicate(v)
@@ -206,6 +258,7 @@ namespace Resulta.Extensions
     /// <param name="action">The side effect to execute, receiving the current value.</param>
     public AsyncPipeline<T> Tap(Action<T> action)
     {
+      ArgumentNullException.ThrowIfNull(action);
       var next = _task.Bind(v =>
       {
         action(v);
@@ -222,6 +275,7 @@ namespace Resulta.Extensions
     /// <param name="action">The async side effect to execute, receiving the current value.</param>
     public AsyncPipeline<T> TapAsync(Func<T, Task> action)
     {
+      ArgumentNullException.ThrowIfNull(action);
       var next = _task.Bind(async v =>
       {
         await action(v);
@@ -240,7 +294,11 @@ namespace Resulta.Extensions
     /// <param name="onSuccess">Invoked with the value when the pipeline succeeded.</param>
     /// <param name="onFailure">Invoked with the error when the pipeline failed.</param>
     public async Task<TOut> Finally<TOut>(Func<T, TOut> onSuccess, Func<Error, TOut> onFailure)
-        => (await _task).Match(onSuccess, onFailure);
+    {
+      ArgumentNullException.ThrowIfNull(onSuccess);
+      ArgumentNullException.ThrowIfNull(onFailure);
+      return (await _task).Match(onSuccess, onFailure);
+    }
 
     /// <summary>
     /// Terminates the async pipeline with void actions for both the success and failure case.
@@ -248,7 +306,11 @@ namespace Resulta.Extensions
     /// <param name="onSuccess">Invoked with the value when the pipeline succeeded.</param>
     /// <param name="onFailure">Invoked with the error when the pipeline failed.</param>
     public async Task Finally(Action<T> onSuccess, Action<Error> onFailure)
-        => (await _task).Match(onSuccess, onFailure);
+    {
+      ArgumentNullException.ThrowIfNull(onSuccess);
+      ArgumentNullException.ThrowIfNull(onFailure);
+      (await _task).Match(onSuccess, onFailure);
+    }
 
     /// <summary>Returns the underlying <see cref="Task"/>-wrapped <see cref="Result{T}"/> without handling it.</summary>
     public Task<Result<T>> Build() => _task;
@@ -261,6 +323,8 @@ namespace Resulta.Extensions
     public static async Task<Result<TOut>> Bind<T, TOut>(
         this Task<Result<T>> task, Func<T, Task<Result<TOut>>> binder)
     {
+      ArgumentNullException.ThrowIfNull(task);
+      ArgumentNullException.ThrowIfNull(binder);
       var result = await task;
       return result.IsFailure ? Result<TOut>.Fail(result.Error) : await binder(result.Value);
     }

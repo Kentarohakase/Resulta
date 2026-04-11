@@ -19,6 +19,8 @@ namespace Resulta
     public static async Task<Result<TOut>> MapAsync<T, TOut>(
         this Result<T> result, Func<T, Task<TOut>> mapper)
     {
+      ArgumentNullException.ThrowIfNull(result);
+      ArgumentNullException.ThrowIfNull(mapper);
       if (result.IsFailure) return Result<TOut>.Fail(result.Error);
       var mapped = await mapper(result.Value);
       return Result<TOut>.Ok(mapped);
@@ -35,6 +37,8 @@ namespace Resulta
     public static async Task<Result<TOut>> BindAsync<T, TOut>(
         this Result<T> result, Func<T, Task<Result<TOut>>> binder)
     {
+      ArgumentNullException.ThrowIfNull(result);
+      ArgumentNullException.ThrowIfNull(binder);
       if (result.IsFailure) return Result<TOut>.Fail(result.Error);
       return await binder(result.Value);
     }
@@ -50,6 +54,8 @@ namespace Resulta
     public static async Task<Result<T>> BindAsync<T>(
         this Result<T> result, Func<T, Task<Result>> binder)
     {
+      ArgumentNullException.ThrowIfNull(result);
+      ArgumentNullException.ThrowIfNull(binder);
       if (result.IsFailure) return result;
       var next = await binder(result.Value);
       return next.IsSuccess ? result : Result<T>.Fail(next.Error);
@@ -67,6 +73,8 @@ namespace Resulta
     public static async Task<Result<TOut>> Map<T, TOut>(
         this Task<Result<T>> task, Func<T, TOut> mapper)
     {
+      ArgumentNullException.ThrowIfNull(task);
+      ArgumentNullException.ThrowIfNull(mapper);
       var result = await task;
       return result.Map(mapper);
     }
@@ -81,6 +89,8 @@ namespace Resulta
     public static async Task<Result<TOut>> Bind<T, TOut>(
         this Task<Result<T>> task, Func<T, Result<TOut>> binder)
     {
+      ArgumentNullException.ThrowIfNull(task);
+      ArgumentNullException.ThrowIfNull(binder);
       var result = await task;
       return result.Bind(binder);
     }
@@ -97,6 +107,9 @@ namespace Resulta
     public static async Task<TOut> Match<T, TOut>(
         this Task<Result<T>> task, Func<T, TOut> onSuccess, Func<Error, TOut> onFailure)
     {
+      ArgumentNullException.ThrowIfNull(task);
+      ArgumentNullException.ThrowIfNull(onSuccess);
+      ArgumentNullException.ThrowIfNull(onFailure);
       var result = await task;
       return result.Match(onSuccess, onFailure);
     }
@@ -111,6 +124,10 @@ namespace Resulta
     /// <param name="results">The results to combine.</param>
     public static Result Combine(params Result[] results)
     {
+      ArgumentNullException.ThrowIfNull(results);
+      foreach (var r in results)
+        ArgumentNullException.ThrowIfNull(r);
+
       var errors = results.Where(r => r.IsFailure).Select(r => r.Error).ToList();
       if (!errors.Any()) return Result.Ok();
 
@@ -129,7 +146,10 @@ namespace Resulta
     /// <typeparam name="T">The type of each result's value.</typeparam>
     /// <param name="results">The results to combine.</param>
     public static Result<IReadOnlyList<T>> Combine<T>(params Result<T>[] results)
-        => Combine<T>((IEnumerable<Result<T>>)results);
+    {
+      ArgumentNullException.ThrowIfNull(results);
+      return Combine<T>((IEnumerable<Result<T>>)results);
+    }
 
     /// <summary>
     /// Combines a sequence of <see cref="Result{T}"/> instances into a single result containing all values.
@@ -139,7 +159,10 @@ namespace Resulta
     /// <param name="results">The sequence of results to combine.</param>
     public static Result<IReadOnlyList<T>> Combine<T>(IEnumerable<Result<T>> results)
     {
+      ArgumentNullException.ThrowIfNull(results);
       var list = results.ToList();
+      foreach (var r in list)
+        ArgumentNullException.ThrowIfNull(r);
       var failures = list.Where(r => r.IsFailure).Select(r => r.Error).ToList();
 
       if (failures.Any())
@@ -165,6 +188,10 @@ namespace Resulta
     public static async Task<Result<IReadOnlyList<T>>> CombineAsync<T>(
         params Task<Result<T>>[] tasks)
     {
+      ArgumentNullException.ThrowIfNull(tasks);
+      foreach (var t in tasks)
+        ArgumentNullException.ThrowIfNull(t);
+
       var results = await Task.WhenAll(tasks);
       return Combine<T>(results);
     }
@@ -178,7 +205,12 @@ namespace Resulta
     public static async Task<Result<IReadOnlyList<T>>> CombineAsync<T>(
         IEnumerable<Task<Result<T>>> tasks)
     {
-      var results = await Task.WhenAll(tasks);
+      ArgumentNullException.ThrowIfNull(tasks);
+      var taskArray = tasks as Task<Result<T>>[] ?? tasks.ToArray();
+      foreach (var t in taskArray)
+        ArgumentNullException.ThrowIfNull(t);
+
+      var results = await Task.WhenAll(taskArray);
       return Combine<T>(results);
     }
 
@@ -196,6 +228,9 @@ namespace Resulta
     public static Result<T> Ensure<T>(
         this Result<T> result, Func<T, bool> predicate, string errorMessage)
     {
+      ArgumentNullException.ThrowIfNull(result);
+      ArgumentNullException.ThrowIfNull(predicate);
+      ArgumentException.ThrowIfNullOrWhiteSpace(errorMessage);
       if (result.IsFailure) return result;
       return predicate(result.Value)
           ? result
@@ -214,6 +249,9 @@ namespace Resulta
     public static Result<T> Ensure<T>(
         this Result<T> result, Func<T, bool> predicate, Error error)
     {
+      ArgumentNullException.ThrowIfNull(result);
+      ArgumentNullException.ThrowIfNull(predicate);
+      ArgumentNullException.ThrowIfNull(error);
       if (result.IsFailure) return result;
       return predicate(result.Value) ? result : Result<T>.Fail(error);
     }
@@ -230,6 +268,7 @@ namespace Resulta
     /// <param name="errorMapper">An optional function to convert the exception into an <see cref="Error"/>.</param>
     public static Result<T> Try<T>(Func<T> func, Func<Exception, Error>? errorMapper = null)
     {
+      ArgumentNullException.ThrowIfNull(func);
       try
       {
         return Result<T>.Ok(func());
@@ -249,6 +288,7 @@ namespace Resulta
     /// <param name="errorMapper">An optional function to convert the exception into an <see cref="Error"/>.</param>
     public static Result Try(Action action, Func<Exception, Error>? errorMapper = null)
     {
+      ArgumentNullException.ThrowIfNull(action);
       try
       {
         action();
@@ -271,6 +311,7 @@ namespace Resulta
     public static async Task<Result<T>> TryAsync<T>(
         Func<Task<T>> func, Func<Exception, Error>? errorMapper = null)
     {
+      ArgumentNullException.ThrowIfNull(func);
       try
       {
         return Result<T>.Ok(await func());

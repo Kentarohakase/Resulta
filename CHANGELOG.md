@@ -7,6 +7,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 
+## [2.1.1] - 2026-04-11
+
+### Added
+- Regression tests for defensive `Error` metadata copying, null-guards on `ResultExtensions`, pipelines, `Result<T>.Ok(null)` semantics, and ASP.NET Core HTTP mapping consistency.
+
+### Changed
+- **`Error`:** Constructor now always copies the optional metadata dictionary so external mutations cannot alter an error’s metadata (immutability).
+- **`ResultExtensions`:** All public methods now validate non-null `result`, `task`, delegates, `error`, and collection arguments with `ArgumentNullException` (and `ArgumentException` for invalid `Ensure` messages).
+- **`Pipeline<T>` / `AsyncPipeline<T>`:** Added the same style of null/whitespace guards for entry points, steps, validation, taps, and `Finally`; `AsyncPipeline.Start` rejects a null task from the factory.
+- **`TaskResultExtensions.Bind`:** Validates `task` and `binder`.
+- **`Resulta.AspNetCore`:** MVC (generic and non-generic) and Minimal API mappings are aligned — `VALIDATION_ERROR` includes optional `field` from metadata everywhere; non-generic MVC now maps `CONFLICT` and matches generic behavior; Minimal API returns a JSON `ErrorResponse` for `UNAUTHORIZED` (instead of an empty 401) and uses `500` + `INTERNAL_ERROR` for unknown codes (same as MVC).
+- **Samples:** Demo code moved from `Resulta/Examples.cs` to `samples/Resulta.Samples/` so the core package build contains no sample entry points.
+- **Docs:** `Result<T>.Ok` documents that `null` reference values are treated as success; root `README` and `VERSIONING.md` updated (removed stale FluentResults path references).
+
+### Fixed
+- Non-generic `ToActionResult` omitted `CONFLICT` and validation `field` parity with the generic overload.
+
+### Notes for consumers
+- **Minimal API:** `ToMinimalApiResult` previously returned an empty `401` for `UNAUTHORIZED` and `Results.Problem` for unknown codes; it now returns JSON `ErrorResponse` bodies aligned with MVC (see remarks on `ToMinimalApiResult`). Clients that assumed an empty 401 or Problem Details must be updated.
+- **`Ensure` / pipeline `Validate`:** A null or whitespace-only message now throws `ArgumentException` immediately instead of creating an `Error` that would fail later in `Error`’s constructor.
+
 ## [2.1.0] - 2026-04-07
 
 ### Added
@@ -71,7 +92,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Implicit conversions from values and errors to `Result<T>`.
 - `.NET 10` support.
 
-[Unreleased]: https://github.com/Kentarohakase/Resulta/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/Kentarohakase/Resulta/compare/v2.1.1...HEAD
+[2.1.1]: https://github.com/Kentarohakase/Resulta/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/Kentarohakase/Resulta/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/Kentarohakase/Resulta/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/Kentarohakase/Resulta/compare/v1.0.0...v2.0.0

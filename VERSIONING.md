@@ -61,43 +61,25 @@ Before every release:
 5. Build and pack the NuGet package.
 6. Push the package to NuGet.
 
-## Current repository note
+## Package versions in this repository
 
-At the moment, the repository and project file names still use `FluentResults` in some places, while the package itself is published as **Resulta**.
+**Resulta**, **Resulta.AspNetCore**, and **Resulta.FluentValidation** use the **same `<Version>`** in their `.csproj` files and are released in lockstep (one semantic version for the whole repo). Consumers should reference matching versions across packages to avoid API or behavior skew.
 
-That means your current version update likely happens in:
+Update the version in all three project files for each release:
 
-```xml
-<Version>1.0.0</Version>
-```
-
-inside:
-
-```text
-FluentResults/FluentResults.csproj
-```
-
-If you later rename the folder and project file to `Resulta`, update the commands in this guide accordingly.
+- `Resulta/Resulta.csproj`
+- `Resulta.AspNetCore/Resulta.AspNetCore.csproj`
+- `Resulta.FluentValidation/Resulta.FluentValidation.csproj`
 
 ## Release commands
 
-### 1. Update the version in the project file
+### 1. Update the version in each project file
 
 ```xml
-<Version>1.0.1</Version>
+<Version>2.1.1</Version>
 ```
 
-or
-
-```xml
-<Version>1.1.0</Version>
-```
-
-or
-
-```xml
-<Version>2.0.0</Version>
-```
+Use the same value everywhere (patch / minor / major per the rules above).
 
 ### 2. Build and pack
 
@@ -108,21 +90,21 @@ dotnet pack -c Release
 
 ### 3. Push to NuGet
 
-With your current repository structure:
+From the repository root (adjust paths if your output layout differs):
 
 ```bash
-dotnet nuget push .\FluentResults\bin\Release\Resulta.X.Y.Z.nupkg ^
+dotnet nuget push .\Resulta\bin\Release\Resulta.X.Y.Z.nupkg ^
   --api-key YOUR_API_KEY ^
   --source https://api.nuget.org/v3/index.json
 ```
 
-If you rename the project folder later, adjust the package path.
+Repeat for `Resulta.AspNetCore` and `Resulta.FluentValidation` packages as needed.
 
 ### 4. Tag the release on GitHub
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+git tag v2.1.1
+git push origin v2.1.1
 ```
 
 ## Practical rule of thumb

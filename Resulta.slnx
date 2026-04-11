@@ -3,4 +3,5 @@
   <Project Path="Resulta.FluentValidation/Resulta.FluentValidation.csproj" />
   <Project Path="Resulta.Tests/Resulta.Tests.csproj" />
   <Project Path="Resulta/Resulta.csproj" />
+  <Project Path="samples/Resulta.Samples/Resulta.Samples.csproj" />
 </Solution>
