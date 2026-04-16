@@ -8,11 +8,11 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 env:
   DOTNET_VERSION: '10.0.x'
   NUGET_SOURCE: https://api.nuget.org/v3/index.json
-  PACKAGE_PROJECT: Resulta/Resulta.csproj
   ARTIFACTS_DIR: ./artifacts
 
 jobs:
@@ -29,22 +29,27 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore dependencies
-        run: dotnet restore ${{ env.PACKAGE_PROJECT }}
+      - name: Restore
+        run: dotnet restore
 
       - name: Build
-        run: dotnet build ${{ env.PACKAGE_PROJECT }} -c Release --no-restore
+        run: dotnet build -c Release --no-restore
 
       - name: Test
-        run: dotnet test -c Release --verbosity normal
+        run: dotnet test -c Release --no-build --verbosity normal
 
-      - name: Pack
-        run: dotnet pack ${{ env.PACKAGE_PROJECT }} -c Release --no-build --output ${{ env.ARTIFACTS_DIR }}
+      - name: Pack Resulta
+        run: dotnet pack ./Resulta/Resulta.csproj -c Release --no-build --output ${{ env.ARTIFACTS_DIR }}
+
+      - name: Pack Resulta.AspNetCore
+        run: dotnet pack ./Resulta.AspNetCore/Resulta.AspNetCore.csproj -c Release --no-build --output ${{ env.ARTIFACTS_DIR }}
+
+      - name: Pack Resulta.FluentValidation
+        run: dotnet pack ./Resulta.FluentValidation/Resulta.FluentValidation.csproj -c Release --no-build --output ${{ env.ARTIFACTS_DIR }}
 
       - name: Publish to NuGet
         run: |
-          dotnet nuget push "${{ env.ARTIFACTS_DIR }}/Resulta.*.nupkg" \
-            --api-key "${{ secrets.NUGET_API_KEY }}" \
+          dotnet nuget push "${{ env.ARTIFACTS_DIR }}/*.nupkg" \
             --source "${{ env.NUGET_SOURCE }}" \
             --skip-duplicate
 
