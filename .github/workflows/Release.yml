@@ -29,11 +29,6 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v2
-        with:
-          nuget-version: latest
-
       - name: Restore
         run: dotnet restore
 
@@ -53,16 +48,10 @@ jobs:
         run: dotnet pack ./Resulta.FluentValidation/Resulta.FluentValidation.csproj -c Release --no-build --output ${{ env.ARTIFACTS_DIR }}
 
       - name: Publish to NuGet
-        shell: bash
         run: |
-          shopt -s nullglob
-          for package in "${{ env.ARTIFACTS_DIR }}"/*.nupkg; do
-            echo "Publishing $package"
-            nuget push "$package" \
-              -Source "${{ env.NUGET_SOURCE }}" \
-              -SkipDuplicate \
-              -NonInteractive
-          done
+          dotnet nuget push "${{ env.ARTIFACTS_DIR }}/*.nupkg" \
+            --source "${{ env.NUGET_SOURCE }}" \
+            --skip-duplicate
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
