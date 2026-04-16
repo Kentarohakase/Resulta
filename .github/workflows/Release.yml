@@ -19,7 +19,7 @@ permissions:
 jobs:
   release:
     name: Build, Pack & Publish
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout
@@ -40,19 +40,23 @@ jobs:
         run: dotnet test -c Release --no-build --verbosity normal
 
       - name: Pack Resulta
-        run: dotnet pack ./Resulta/Resulta.csproj -c Release --no-build --output ${{ env.ARTIFACTS_DIR }}
+        run: dotnet pack .\Resulta\Resulta.csproj -c Release --no-build --output ${{ env.ARTIFACTS_DIR }}
 
       - name: Pack Resulta.AspNetCore
-        run: dotnet pack ./Resulta.AspNetCore/Resulta.AspNetCore.csproj -c Release --no-build --output ${{ env.ARTIFACTS_DIR }}
+        run: dotnet pack .\Resulta.AspNetCore\Resulta.AspNetCore.csproj -c Release --no-build --output ${{ env.ARTIFACTS_DIR }}
 
       - name: Pack Resulta.FluentValidation
-        run: dotnet pack ./Resulta.FluentValidation/Resulta.FluentValidation.csproj -c Release --no-build --output ${{ env.ARTIFACTS_DIR }}
+        run: dotnet pack .\Resulta.FluentValidation\Resulta.FluentValidation.csproj -c Release --no-build --output ${{ env.ARTIFACTS_DIR }}
 
       - name: Publish to NuGet
+        shell: pwsh
         run: |
-          dotnet nuget push "${{ env.ARTIFACTS_DIR }}/*.nupkg" \
-            --source "${{ env.NUGET_SOURCE }}" \
-            --skip-duplicate
+          Get-ChildItem "${{ env.ARTIFACTS_DIR }}" -Filter *.nupkg | ForEach-Object {
+            Write-Host "Publishing $($_.FullName)"
+            dotnet nuget push $_.FullName `
+              --source "${{ env.NUGET_SOURCE }}" `
+              --skip-duplicate
+          }
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
