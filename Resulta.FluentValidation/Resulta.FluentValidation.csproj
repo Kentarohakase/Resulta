@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 
 		<PackageId>Resulta.FluentValidation</PackageId>
-		<Version>2.1.3</Version>
+		<Version>2.1.4</Version>
 		<Authors>Kentaro</Authors>
 		<Description>FluentValidation integration for Resulta, including helpers for converting validation output into Result and ValidationResult.</Description>
 		<PackageTags>result-pattern;fluentvalidation;validation;dotnet;csharp</PackageTags>
