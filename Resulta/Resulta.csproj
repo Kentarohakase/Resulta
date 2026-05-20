@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 
 		<PackageId>Resulta</PackageId>
-		<Version>2.1.6</Version>
+		<Version>2.1.7</Version>
 		<Authors>Kentaro</Authors>
 		<Description>Lightweight Result pattern library for C# with structured errors, validation primitives, helper methods, and pipelines.</Description>
 		<PackageTags>result-pattern;results;error-handling;railway-oriented-programming;validation;dotnet;csharp</PackageTags>

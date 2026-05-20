@@ -50,10 +50,16 @@ jobs:
 
       - name: Publish to NuGet
         shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
+          if (-not $env:NUGET_API_KEY) {
+            throw "NUGET_API_KEY secret is not set. Add it under Settings > Secrets and variables > Actions."
+          }
           Get-ChildItem "${{ env.ARTIFACTS_DIR }}" -Filter *.nupkg | ForEach-Object {
             Write-Host "Publishing $($_.FullName)"
             dotnet nuget push $_.FullName `
+              --api-key $env:NUGET_API_KEY `
               --source "${{ env.NUGET_SOURCE }}" `
               --skip-duplicate
           }
