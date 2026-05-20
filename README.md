@@ -106,15 +106,11 @@ string response = result.Match(
 );
 ```
 
-<<<<<<< HEAD
 ### Success and null (reference types)
 
 For reference types, `Result<T>.Ok(value)` still represents **success** when `value` is `null`. If `null` is invalid in your domain, validate explicitly and return `Result<T>.Fail(...)` instead. Value types are unaffected (`Result<int>.Ok` always carries a value).
 
-### Try and TryAsync
-=======
 ### Try – catch exceptions
->>>>>>> 2e990f0d7e8fdf7de2f918c595ecf2317a6942ba
 
 ```csharp
 var result = ResultExtensions.Try(
@@ -254,7 +250,6 @@ public async Task<Result<User>> RegisterAsync(RegisterDto dto) =>
 
 ---
 
-<<<<<<< HEAD
 ## Project Structure
 
 ```text
@@ -301,8 +296,6 @@ For version bump rules and release guidance, see [VERSIONING.md](./VERSIONING.md
 
 ---
 
-=======
->>>>>>> 2e990f0d7e8fdf7de2f918c595ecf2317a6942ba
 ## Contributing
 
 Contributions, issues and feature requests are welcome!
