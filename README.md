@@ -214,12 +214,19 @@ dotnet add package Resulta.AspNetCore
 builder.Services.AddResulta();
 app.UseResulta();
 
+// MVC
 [HttpGet("{id}")]
 public IActionResult Get(int id)
     => _service.GetUser(id).ToActionResult(this);
 
+// Minimal API
 app.MapGet("/api/users/{id}", (int id, UserService svc)
     => svc.GetUser(id).ToMinimalApiResult());
+
+// Minimal API with TypedResults + OpenAPI annotations
+app.MapGet("/api/users/{id}", (int id, UserService svc)
+    => svc.GetUser(id).ToTypedResult())
+   .ProducesResultaErrors();
 ```
 
 | `Error.Code`       | HTTP Status               |
@@ -230,7 +237,32 @@ app.MapGet("/api/users/{id}", (int id, UserService svc)
 | `CONFLICT`         | 409 Conflict              |
 | _(anything else)_  | 500 Internal Server Error |
 
-MVC (`ToActionResult`) and Minimal APIs (`ToMinimalApiResult`) use the same rules: validation errors may include a `field` property when present in `Error.Metadata`, and unknown codes return a JSON body with code `INTERNAL_ERROR`.
+All failure responses use the RFC 7807 `application/problem+json` format. Validation errors return `HttpValidationProblemDetails` with an `errors` dictionary keyed by field name. Other codes return `ProblemDetails`. The original `Error.Code` is preserved on every response as the `code` extension property:
+
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.4",
+  "title": "Not Found",
+  "status": 404,
+  "detail": "'User' was not found.",
+  "instance": "/api/users/42",
+  "code": "NOT_FOUND"
+}
+```
+
+For type-safe Minimal API endpoints with full OpenAPI metadata, use `ToTypedResult()` together with `ProducesResultaErrors()` — the endpoint then advertises every possible response shape (200/204, 404, 400 validation, 409, and `ProblemHttpResult` for 401/500).
+
+### JSON converters for `Result` / `Error`
+
+The core package also ships System.Text.Json converters if you want to serialize `Result<T>` over the wire (for inter-service messaging, queues, or persistence) instead of mapping through HTTP:
+
+```csharp
+var options = new JsonSerializerOptions().AddResultaConverters();
+var json    = JsonSerializer.Serialize(Result<int>.Fail(Error.Validation("email", "Invalid")), options);
+// → {"isSuccess":false,"error":{"message":"Validation failed for 'email': Invalid","code":"VALIDATION_ERROR","field":"email"}}
+```
+
+The converters never leak exception stack traces and truncate `causedBy` chains at three levels.
 
 ---
 

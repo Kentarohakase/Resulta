@@ -7,6 +7,75 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 
+## [3.0.0] - 2026-05-20
+
+This release modernizes the ASP.NET Core integration around RFC 7807 `ProblemDetails`,
+adds first-class `TypedResults` support for Minimal API, ships System.Text.Json converters
+for `Result`/`Error`, and adds OpenAPI helpers for the standard Resulta error responses.
+
+### Added
+- **Core**: `Resulta.Json.ResultaJsonConverterFactory` and the underlying `ResultJsonConverter`,
+  `ResultJsonConverter<T>`, and `ErrorJsonConverter`. Opt in with
+  `JsonSerializerOptions.AddResultaConverters()`. JSON is discriminated by `isSuccess`;
+  errors expose `message`, `code`, optional `field`, optional `exceptionMessage` (never the
+  stack trace), and a recursive `causedBy` chain truncated at three levels.
+- **AspNetCore**: `ResultProblemDetailsFactory.Create(Error, HttpContext?)` builds an
+  RFC 7807 `ProblemDetails` (or `HttpValidationProblemDetails` for validation errors) from
+  any Resulta `Error`. The original `Error.Code` is preserved as the `code` extension property.
+- **AspNetCore**: `ProblemTypeUris` exposes the canonical RFC `type` URIs Resulta uses
+  (`NotFound`, `BadRequest`, `Unauthorized`, `Conflict`, `InternalServerError`).
+- **AspNetCore**: `TypedMinimalApiExtensions.ToTypedResult` returns
+  `Results<Ok<T>, NotFound<ProblemDetails>, BadRequest<HttpValidationProblemDetails>, Conflict<ProblemDetails>, ProblemHttpResult>`
+  so OpenAPI / Swagger / generated client SDKs see every possible response shape.
+- **AspNetCore**: `MinimalApiExtensions.ToMinimalApiResult` non-generic overload for `Result`
+  (returns 204 on success).
+- **AspNetCore**: `RouteHandlerBuilder.ProducesResultaErrors()` registers the standard
+  Resulta error responses (400/401/404/409/500) on a Minimal API endpoint in one call.
+  A `params int[]` overload allows opting in to a subset.
+
+### Changed (BREAKING)
+- **AspNetCore**: `ToActionResult`, `ToActionResult<T>`, `ToMinimalApiResult<T>` and
+  `ResultMiddleware` now respond with `application/problem+json` and a `ProblemDetails`
+  (or `HttpValidationProblemDetails`) body on failure. HTTP status codes are unchanged.
+  Clients that depended on the exact `ErrorResponse` JSON layout from 2.x must adopt
+  the standard RFC 7807 shape (`status`, `title`, `type`, `detail`, `instance`,
+  `code` extension).
+- **AspNetCore**: Validation errors now place the field name and message in
+  `HttpValidationProblemDetails.Errors` (e.g. `{"errors": {"email": ["Invalid"]}}`)
+  rather than a custom top-level `field` property.
+- **AspNetCore**: Unknown error codes (anything outside `NOT_FOUND`, `VALIDATION_ERROR`,
+  `UNAUTHORIZED`, `CONFLICT`) are flattened to a generic
+  `500 Internal Server Error` with `code: "INTERNAL_ERROR"` and detail
+  `"An internal error occurred."` — preserving the previous safety behavior of not
+  leaking internal codes or exception messages to clients.
+
+### Removed (BREAKING)
+- **AspNetCore**: Public record `ErrorResponse` removed. Callers that explicitly
+  referenced this type must migrate to `ProblemDetails` /
+  `HttpValidationProblemDetails`, or map `Error` themselves.
+
+### Migration notes for consumers
+- **JSON parsing**: Replace any client code that read `{ "message", "code", "field" }`
+  with code that reads `{ "title", "detail", "status", "type", "code" }` (and
+  `errors` for validation). The `code` extension on `ProblemDetails` continues to expose
+  the original `Error.Code`.
+- **MVC return types**: Endpoint return types (`IActionResult`) and status codes are
+  unchanged; only the response body shape differs. Most controllers need no changes.
+- **Minimal API**: Switch to `ToTypedResult()` when you want OpenAPI to see every
+  possible response shape; otherwise the existing `ToMinimalApiResult()` keeps working.
+- **OpenAPI**: Chain `.ProducesResultaErrors()` onto Minimal API endpoint declarations
+  to register the standard Resulta error responses.
+
+
+## [2.1.7] - 2026-04-16
+
+### Maintenance
+- Series of release-pipeline fixes between 2.1.2 and 2.1.7 — adopted GitHub Actions
+  Node 24, switched the release workflow to Windows runners, settled on the
+  `dotnet nuget push` CLI with an API key after a brief experiment with trusted
+  publishing. No library code changes.
+
+
 ## [2.1.1] - 2026-04-11
 
 ### Added
@@ -92,7 +161,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Implicit conversions from values and errors to `Result<T>`.
 - `.NET 10` support.
 
-[Unreleased]: https://github.com/Kentarohakase/Resulta/compare/v2.1.1...HEAD
+[Unreleased]: https://github.com/Kentarohakase/Resulta/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/Kentarohakase/Resulta/compare/v2.1.7...v3.0.0
+[2.1.7]: https://github.com/Kentarohakase/Resulta/compare/v2.1.1...v2.1.7
 [2.1.1]: https://github.com/Kentarohakase/Resulta/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/Kentarohakase/Resulta/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/Kentarohakase/Resulta/compare/v2.0.0...v2.0.1
