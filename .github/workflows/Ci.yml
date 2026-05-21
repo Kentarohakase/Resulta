@@ -18,7 +18,17 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Check for merge conflict markers
+        shell: bash
+        run: |
+          if git grep -n -E '^(<<<<<<<|=======|>>>>>>>)'; then
+            echo "Merge conflict markers found. Resolve them before building."
+            exit 1
+          fi
 
       - name: Restore dependencies
         run: dotnet restore

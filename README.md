@@ -6,7 +6,7 @@ A lightweight C# library for the **Result pattern** – error handling without e
 [![NuGet Downloads](https://img.shields.io/nuget/dt/Resulta)](https://www.nuget.org/packages/Resulta)
 [![CI](https://github.com/Kentarohakase/Resulta/actions/workflows/Ci.yml/badge.svg)](https://github.com/Kentarohakase/Resulta/actions/workflows/Ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![.NET](https://img.shields.io/badge/.NET-10.0-blue)](https://dotnet.microsoft.com)
+[![.NET](https://img.shields.io/badge/.NET-8.0%20%2B%2010.0-blue)](https://dotnet.microsoft.com)
 
 ---
 
@@ -41,6 +41,8 @@ return GetUser(id).Match<IActionResult>(
 ---
 
 ## Installation
+
+Resulta packages target both `net8.0` and `net10.0`.
 
 ### Core package
 
@@ -321,7 +323,7 @@ Resulta follows **Semantic Versioning**:
 - **MINOR** for backwards-compatible features
 - **PATCH** for fixes and small improvements
 
-NuGet packages are published on every **MINOR** or **MAJOR** version bump.
+GitHub Releases are created for every `vX.Y.Z` tag. NuGet packages are published only for **MINOR** or **MAJOR** tags where the patch component is `0` (for example `v3.1.0` or `v4.0.0`). Patch tags such as `v3.0.1` are GitHub-only.
 
 For release history, see [CHANGELOG.md](./CHANGELOG.md).
 For version bump rules and release guidance, see [VERSIONING.md](./VERSIONING.md).

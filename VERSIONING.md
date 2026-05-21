@@ -5,10 +5,10 @@
 `MAJOR.MINOR.PATCH`
 
 Examples:
-- `1.0.0` → first stable release
-- `1.1.0` → new backwards-compatible feature
-- `1.0.1` → backwards-compatible bug fix
-- `2.0.0` → breaking change
+- `1.0.0` -> first stable release
+- `1.1.0` -> new backwards-compatible feature
+- `1.0.1` -> backwards-compatible bug fix
+- `2.0.0` -> breaking change
 
 ---
 
@@ -43,30 +43,9 @@ Examples:
 
 ---
 
-## NuGet publishing policy
-
-NuGet packages are published automatically via GitHub Actions on every **MINOR** or **MAJOR** version tag.
-
-- `v2.1.0` → published to NuGet ✅
-- `v2.0.1` → pushed to GitHub only, no NuGet publish ❌
-
-Patch releases are intentionally not published to NuGet to keep the feed clean.
-
----
-
-## Release checklist
-
-Before every release:
-
-1. Update the version in all three `.csproj` files (`Resulta`, `Resulta.AspNetCore`, `Resulta.FluentValidation`).
-2. Add the new entry to `CHANGELOG.md`.
-3. Commit and push changes to `main`.
-4. Push a version tag — GitHub Actions handles the rest automatically.
-
-<<<<<<< HEAD
 ## Package versions in this repository
 
-**Resulta**, **Resulta.AspNetCore**, and **Resulta.FluentValidation** use the **same `<Version>`** in their `.csproj` files and are released in lockstep (one semantic version for the whole repo). Consumers should reference matching versions across packages to avoid API or behavior skew.
+**Resulta**, **Resulta.AspNetCore**, and **Resulta.FluentValidation** use the same `<Version>` in their `.csproj` files and are released in lockstep. Consumers should reference matching versions across packages to avoid API or behavior skew.
 
 Update the version in all three project files for each release:
 
@@ -74,77 +53,75 @@ Update the version in all three project files for each release:
 - `Resulta.AspNetCore/Resulta.AspNetCore.csproj`
 - `Resulta.FluentValidation/Resulta.FluentValidation.csproj`
 
-## Release commands
+The packages target both `net8.0` and `net10.0`.
 
-### 1. Update the version in each project file
+---
 
-```xml
-<Version>2.1.1</Version>
-```
+## NuGet publishing policy
 
-Use the same value everywhere (patch / minor / major per the rules above).
+GitHub Actions builds, tests, packs, and creates a GitHub Release for every `vX.Y.Z` tag.
 
-### 2. Build and pack
-=======
+NuGet packages are published only for **MAJOR** or **MINOR** release tags where the patch component is `0`.
+
+- `v3.1.0` -> GitHub Release and NuGet publish
+- `v4.0.0` -> GitHub Release and NuGet publish
+- `v3.0.1` -> GitHub Release only, no NuGet publish
+
+Patch releases are intentionally kept GitHub-only to keep the NuGet feed focused on stable feature and breaking-change releases.
+
+---
+
+## Release checklist
+
+Before every release:
+
+1. Update the version in all three package project files.
+2. Add the new entry to `CHANGELOG.md`.
+3. Run `dotnet restore Resulta.slnx`.
+4. Run `dotnet build Resulta.slnx -c Release --no-restore`.
+5. Run `dotnet test Resulta.slnx -c Release --framework net8.0`.
+6. Run `dotnet test Resulta.slnx -c Release --framework net10.0`.
+7. Commit and push changes to `master`.
+8. Push a version tag.
+
 ---
 
 ## Release commands
 
-### 1. Update the version in all `.csproj` files
+### 1. Update the version in all package project files
 
 ```xml
-<Version>2.2.0</Version>
+<Version>3.1.0</Version>
 ```
 
-### 2. Commit and push
->>>>>>> 2e990f0d7e8fdf7de2f918c595ecf2317a6942ba
+### 2. Commit and push to master
 
 ```bash
 git add .
-git commit -m "chore: bump version to 2.2.0"
-git push origin main
+git commit -m "chore: bump version to 3.1.0"
+git push origin master
 ```
 
-<<<<<<< HEAD
-### 3. Push to NuGet
-
-From the repository root (adjust paths if your output layout differs):
+### 3. Tag the release
 
 ```bash
-dotnet nuget push .\Resulta\bin\Release\Resulta.X.Y.Z.nupkg ^
-  --api-key YOUR_API_KEY ^
-  --source https://api.nuget.org/v3/index.json
+git tag v3.1.0
+git push origin v3.1.0
 ```
 
-Repeat for `Resulta.AspNetCore` and `Resulta.FluentValidation` packages as needed.
-
-### 4. Tag the release on GitHub
-
-```bash
-git tag v2.1.1
-git push origin v2.1.1
-```
-=======
-### 3. Tag the release — this triggers the full CI/CD pipeline
-
-```bash
-git tag v2.2.0
-git push origin v2.2.0
-```
-
-GitHub Actions will then automatically:
-- Build and run all tests
-- Pack the NuGet packages
-- Publish to NuGet (MINOR/MAJOR only)
-- Create a GitHub Release
+GitHub Actions will then:
+- Reject unresolved merge conflict markers
+- Build and run all tests for `net8.0` and `net10.0`
+- Pack all NuGet packages with both target framework assets
+- Publish to NuGet only when the tag matches `vX.Y.0`
+- Create a GitHub Release for every version tag
 
 ---
->>>>>>> 2e990f0d7e8fdf7de2f918c595ecf2317a6942ba
 
 ## Practical rule of thumb
 
 Ask this before every release:
 
-- Did I break existing user code? → **MAJOR**
-- Did I add new functionality without breaking anything? → **MINOR**
-- Did I only fix something? → **PATCH**
+- Did I break existing user code? -> **MAJOR**
+- Did I add new functionality without breaking anything? -> **MINOR**
+- Did I only fix something? -> **PATCH**

@@ -28,7 +28,30 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: |
+            8.0.x
+            ${{ env.DOTNET_VERSION }}
+
+      - name: Check for merge conflict markers
+        shell: pwsh
+        run: |
+          $matches = git grep -n -E '^(<<<<<<<|=======|>>>>>>>)'
+          if ($LASTEXITCODE -eq 0) {
+            $matches
+            throw "Merge conflict markers found. Resolve them before releasing."
+          }
+          if ($LASTEXITCODE -gt 1) {
+            exit $LASTEXITCODE
+          }
+
+      - name: Determine NuGet publish eligibility
+        id: release_policy
+        shell: pwsh
+        run: |
+          $refName = "${{ github.ref_name }}"
+          $publish = $refName -match '^v\d+\.\d+\.0$'
+          "publish_to_nuget=$($publish.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          Write-Host "NuGet publish enabled: $publish"
 
       - name: Restore
         run: dotnet restore
@@ -49,6 +72,7 @@ jobs:
         run: dotnet pack .\Resulta.FluentValidation\Resulta.FluentValidation.csproj -c Release --no-build --output ${{ env.ARTIFACTS_DIR }}
 
       - name: Publish to NuGet
+        if: steps.release_policy.outputs.publish_to_nuget == 'true'
         shell: pwsh
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
@@ -64,7 +88,12 @@ jobs:
               --skip-duplicate
           }
 
+      - name: Skip NuGet publish for patch or manual run
+        if: steps.release_policy.outputs.publish_to_nuget != 'true'
+        run: echo "NuGet publish skipped because only vX.Y.0 tags are published to NuGet."
+
       - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           name: Release ${{ github.ref_name }}

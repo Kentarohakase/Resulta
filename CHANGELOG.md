@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-05-21
+
+### Changed
+- Multi-target all packages and tests for `net8.0` and `net10.0`.
+- CI now installs both .NET SDK lines and rejects unresolved merge conflict markers before restore/build.
+- Release workflow now builds and creates GitHub Releases for every `vX.Y.Z` tag, but publishes to NuGet only for `vX.Y.0` major/minor tags.
+- Updated release/versioning documentation to use `master`, document lockstep package versions, and clarify GitHub-only patch releases.
 
 ## [3.0.0] - 2026-05-20
 
@@ -161,7 +168,8 @@ for `Result`/`Error`, and adds OpenAPI helpers for the standard Resulta error re
 - Implicit conversions from values and errors to `Result<T>`.
 - `.NET 10` support.
 
-[Unreleased]: https://github.com/Kentarohakase/Resulta/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/Kentarohakase/Resulta/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/Kentarohakase/Resulta/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/Kentarohakase/Resulta/compare/v2.1.7...v3.0.0
 [2.1.7]: https://github.com/Kentarohakase/Resulta/compare/v2.1.1...v2.1.7
 [2.1.1]: https://github.com/Kentarohakase/Resulta/compare/v2.1.0...v2.1.1
