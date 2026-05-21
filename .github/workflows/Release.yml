@@ -43,6 +43,7 @@ jobs:
           if ($LASTEXITCODE -gt 1) {
             exit $LASTEXITCODE
           }
+          exit 0
 
       - name: Determine NuGet publish eligibility
         id: release_policy
